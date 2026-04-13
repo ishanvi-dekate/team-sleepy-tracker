@@ -2,9 +2,9 @@
 
 ## Sleepy Tracker 
 
-Our app is gonna be a sleep/wellness tracker for CCA students, as we've noticed that CCA students struggle to get proper sleep, as well as struggle to balance food, rest, schoolwork, and extracurriculars. 
+Our app is gonna be a sleep/assignment tracker for CCA students, as we've noticed that CCA students struggle to get proper sleep, as well as struggle to balance rest, schoolwork, and extracurriculars. 
 
-## Team 4
+## Team 4 - efficient.epp
 
 - **Ishanvi Dekate** — Project Manager & QA Lead
 - **Holly** — UX Researcher & Needfinding Lead
