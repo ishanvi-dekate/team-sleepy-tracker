@@ -1,12 +1,13 @@
 # team-efficient.epp
 
-We are team 4, and our app is called: **efficient.epp**! 
+## Sleepy Tracker 
 
-Our app is gonna be an assignment/wellness tracker for CCA students, as we've noticed that CCA students struggle to balance rest, schoolwork, and extracurriculars. 
+Our app is gonna be a sleep/assignment tracker for CCA students, as we've noticed that CCA students struggle to get proper sleep, as well as struggle to balance rest, schoolwork, and extracurriculars. 
 
-Our team is: 
-Ishanvi Dekate: Project Manager
-Holly Wang: UX Researcher
-Advaith Karthik: UI/UX Designer
-Nathan Zhao: Front-End Developer
-Anagh Nathwani: Back-End Developer
+## Team 4 - efficient.epp
+
+- **Ishanvi Dekate** — Project Manager & QA Lead
+- **Holly** — UX Researcher & Needfinding Lead
+- **Advaith Karthik** — UX/UI Designer
+- **Nathan Zhao** — Front-End Developer
+- **Anagh Nathwani** — Back-End Developer

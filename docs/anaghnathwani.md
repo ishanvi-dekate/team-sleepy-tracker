@@ -1,0 +1,1 @@
+Anagh Nathwani is a passionate freshman at Canyon Crest Academy who has been assigned the role of Back-End developer for this project. Struggling with consistent sleep himself, he wants to build this app to ensure that students across the globe receive the care that they deserve
