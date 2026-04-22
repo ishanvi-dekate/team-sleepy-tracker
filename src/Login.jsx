@@ -1,11 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import "./Login.css";
 
-// Floating planet component
-const Planet = ({ style, className }) => (
-  <div className={`planet ${className}`} style={style} />
-);
-
-// Google "G" SVG icon
 const GoogleIcon = () => (
   <svg width="22" height="22" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
     <path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.08-6.08C34.46 3.09 29.52 1 24 1 14.82 1 7.07 6.44 3.74 14.09l7.09 5.51C12.53 13.35 17.83 9.5 24 9.5z"/>
@@ -16,7 +11,6 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// Animated star field
 const Stars = () => {
   const stars = Array.from({ length: 60 }, (_, i) => ({
     id: i,
@@ -28,20 +22,18 @@ const Stars = () => {
   }));
 
   return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+    <div className="stars-container">
       {stars.map((s) => (
         <div
           key={s.id}
+          className="star"
           style={{
-            position: "absolute",
             top: s.top,
             left: s.left,
             width: s.size,
             height: s.size,
-            borderRadius: "50%",
-            backgroundColor: "white",
-            opacity: 0,
-            animation: `twinkle ${s.duration}s ease-in-out ${s.delay}s infinite`,
+            animationDelay: `${s.delay}s`,
+            animationDuration: `${s.duration}s`,
           }}
         />
       ))}
@@ -49,7 +41,6 @@ const Stars = () => {
   );
 };
 
-// Planet SVG definitions (inline, matching screenshot aesthetic)
 const planets = [
   {
     id: "asteroid-left",
@@ -104,7 +95,6 @@ const planets = [
         <ellipse cx="130" cy="40" rx="25" ry="22" fill="#555" />
         <circle cx="130" cy="40" r="22" fill="#4a4a4a" />
         <ellipse cx="122" cy="48" rx="5" ry="3.5" fill="#333" opacity="0.6" />
-        {/* Fire trail */}
         <ellipse cx="90" cy="38" rx="40" ry="8" fill="#ff6b35" opacity="0.85" />
         <ellipse cx="65" cy="37" rx="28" ry="5" fill="#ff9500" opacity="0.7" />
         <ellipse cx="42" cy="36" rx="18" ry="3.5" fill="#ffcc00" opacity="0.6" />
@@ -133,7 +123,6 @@ const planets = [
           <rect x="0" y="42" width="100" height="5" fill="#b87050" opacity="0.5" />
           <rect x="0" y="52" width="100" height="9" fill="#cc8855" opacity="0.6" />
           <rect x="0" y="66" width="100" height="5" fill="#b87050" opacity="0.4" />
-          {/* Great red spot */}
           <ellipse cx="62" cy="56" rx="10" ry="7" fill="#c0392b" opacity="0.8" />
         </g>
       </svg>
@@ -223,332 +212,96 @@ const planets = [
           </radialGradient>
           <clipPath id="clip4"><circle cx="60" cy="50" r="36" /></clipPath>
         </defs>
-        {/* Ring behind */}
         <ellipse cx="60" cy="56" rx="55" ry="12" fill="none" stroke="#a07850" strokeWidth="8" opacity="0.4" />
         <circle cx="60" cy="50" r="36" fill="url(#g7)" />
         <g clipPath="url(#clip4)">
           <rect x="20" y="40" width="80" height="5" fill="#8a6040" opacity="0.4" />
           <rect x="20" y="52" width="80" height="4" fill="#8a6040" opacity="0.3" />
         </g>
-        {/* Ring front */}
-        <ellipse cx="60" cy="56" rx="55" ry="12" fill="none" stroke="#c09870" strokeWidth="4" opacity="0.3" clipPath="url(#frontclip)" />
+        <ellipse cx="60" cy="56" rx="55" ry="12" fill="none" stroke="#c09870" strokeWidth="4" opacity="0.3" />
       </svg>
     ),
   },
 ];
 
 export default function Login({ onLogin }) {
-  const [view, setView] = useState("home"); // "home" | "login"
-  const [hoveredBtn, setHoveredBtn] = useState(null);
+  const [view, setView] = useState("home");
 
   const handleGoogleLogin = () => {
-    // In production, this would trigger real OAuth flow
     if (onLogin) onLogin({ provider: "google" });
     alert("Google OAuth flow would start here!");
   };
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+    <div className="login-root">
+      <div className="hero">
+        <Stars />
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-          --purple: #7c6fd4;
-          --purple-dark: #5a4bbb;
-          --purple-bg: #6e5fd0;
-          --button-dark: #3d2c7a;
-          --button-hover: #4e3a90;
-          --white: #ffffff;
-          --footer-bg: #3a3a3a;
-        }
-
-        @keyframes twinkle {
-          0%, 100% { opacity: 0; transform: scale(0.8); }
-          50% { opacity: 0.9; transform: scale(1.2); }
-        }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-12px) rotate(1.5deg); }
-          66% { transform: translateY(-6px) rotate(-1deg); }
-        }
-
-        @keyframes floatCard {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-6px); }
-        }
-
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        .login-root {
-          min-height: 100vh;
-          background: #1a1a2e;
-          font-family: 'Nunito', sans-serif;
-          display: flex;
-          flex-direction: column;
-        }
-
-        /* ── HERO SECTION ── */
-        .hero {
-          background: var(--purple-bg);
-          position: relative;
-          min-height: 65vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-          padding: 40px 20px;
-        }
-
-        .planet {
-          position: absolute;
-          pointer-events: none;
-          animation: float 6s ease-in-out infinite;
-        }
-
-        .hero-content {
-          text-align: center;
-          color: white;
-          z-index: 10;
-          animation: slideUp 0.8s ease-out;
-          max-width: 400px;
-        }
-
-        .app-title {
-          font-family: 'Fredoka', sans-serif;
-          font-size: clamp(1.6rem, 4vw, 2.2rem);
-          font-weight: 700;
-          letter-spacing: 0.5px;
-          margin-bottom: 4px;
-          line-height: 1.2;
-          text-shadow: 0 2px 12px rgba(0,0,0,0.25);
-        }
-
-        .app-subtitle {
-          font-family: 'Fredoka', sans-serif;
-          font-size: clamp(1.4rem, 4vw, 1.9rem);
-          font-weight: 600;
-          margin-bottom: 18px;
-          text-shadow: 0 2px 12px rgba(0,0,0,0.2);
-        }
-
-        .tagline {
-          font-size: clamp(0.95rem, 2.5vw, 1.1rem);
-          font-weight: 700;
-          line-height: 1.5;
-          margin-bottom: 30px;
-          text-shadow: 0 1px 8px rgba(0,0,0,0.15);
-        }
-
-        .hero-cta {
-          background: var(--button-dark);
-          color: white;
-          border: none;
-          border-radius: 50px;
-          padding: 14px 28px;
-          font-family: 'Nunito', sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-          cursor: pointer;
-          transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-          line-height: 1.4;
-        }
-
-        .hero-cta:hover {
-          background: var(--button-hover);
-          transform: translateY(-2px) scale(1.03);
-          box-shadow: 0 8px 28px rgba(0,0,0,0.35);
-        }
-
-        .hero-cta:active {
-          transform: scale(0.97);
-        }
-
-        /* ── FOOTER ── */
-        .hero-footer {
-          background: var(--footer-bg);
-          color: #aaa;
-          text-align: center;
-          padding: 18px;
-          font-size: 0.8rem;
-          font-weight: 400;
-        }
-
-        /* ── LOGIN CARD AREA ── */
-        .login-area {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 40px 20px;
-          gap: 14px;
-          animation: fadeIn 0.4s ease-out;
-        }
-
-        .login-label {
-          color: #888;
-          font-size: 0.9rem;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          align-self: center;
-        }
-
-        .login-card {
-          background: var(--purple-bg);
-          border-radius: 24px;
-          padding: 36px 32px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 16px;
-          width: 100%;
-          max-width: 340px;
-          animation: floatCard 4s ease-in-out infinite;
-          box-shadow: 0 8px 40px rgba(100, 80, 200, 0.4);
-        }
-
-        .google-login-row {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-family: 'Nunito', sans-serif;
-          font-size: 1.05rem;
-          font-weight: 700;
-          color: white;
-          margin-bottom: 6px;
-        }
-
-        .card-btn {
-          width: 100%;
-          background: var(--button-dark);
-          color: white;
-          border: none;
-          border-radius: 50px;
-          padding: 15px 20px;
-          font-family: 'Nunito', sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-          cursor: pointer;
-          transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-          box-shadow: 0 3px 14px rgba(0,0,0,0.3);
-          letter-spacing: 0.2px;
-        }
-
-        .card-btn:hover {
-          background: var(--button-hover);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-        }
-
-        .card-btn:active {
-          transform: scale(0.97);
-        }
-
-        .back-link {
-          color: #aaa;
-          font-size: 0.85rem;
-          font-weight: 600;
-          cursor: pointer;
-          text-decoration: underline;
-          text-underline-offset: 3px;
-          transition: color 0.2s;
-          margin-top: 8px;
-        }
-        .back-link:hover { color: #ccc; }
-      `}</style>
-
-      <div className="login-root">
-        {/* ── HERO ── */}
-        <div className="hero">
-          <Stars />
-
-          {/* Planets */}
-          {planets.map((p) => (
-            <div
-              key={p.id}
-              className="planet"
-              style={{
-                top: p.top,
-                left: p.left,
-                right: p.right,
-                width: p.size,
-                height: p.id === "meteor" ? p.size * 0.5 : p.size,
-                animationDelay: p.animDelay,
-                animationDuration: p.id === "meteor" ? "8s" : "6s",
-              }}
-            >
-              {p.element}
-            </div>
-          ))}
-
-          {/* Center text */}
-          <div className="hero-content">
-            <div className="app-title">efficient.epp</div>
-            <div className="app-subtitle">expLore YoUr HaBits</div>
-            <div className="tagline">
-              Get in charge of your<br />
-              assignments, activities<br />
-              and sleep!
-            </div>
-            <button
-              className="hero-cta"
-              onClick={() => setView("login")}
-            >
-              Press this button to hop<br />on through Google!
-            </button>
+        {planets.map((p) => (
+          <div
+            key={p.id}
+            className="planet"
+            style={{
+              top: p.top,
+              left: p.left,
+              right: p.right,
+              width: p.size,
+              height: p.id === "meteor" ? p.size * 0.5 : p.size,
+              animationDelay: p.animDelay,
+              animationDuration: p.id === "meteor" ? "8s" : "6s",
+            }}
+          >
+            {p.element}
           </div>
-        </div>
+        ))}
 
-        {/* ── FOOTER ── */}
-        <div className="hero-footer">
-          2026 All rights reserved to E Group LLC
-        </div>
-
-        {/* ── LOGIN AREA ── */}
-        <div className="login-area">
-          {view === "home" ? (
-            <p style={{ color: "#666", fontSize: "0.9rem", fontWeight: 600 }}>
-              ↑ Click the button above to sign in
-            </p>
-          ) : (
-            <>
-              <div className="login-label">Google login</div>
-              <div className="login-card">
-                <div className="google-login-row">
-                  <GoogleIcon />
-                  <span>Login</span>
-                </div>
-                <button className="card-btn" onClick={handleGoogleLogin}>
-                  Sign In
-                </button>
-                <button
-                  className="card-btn"
-                  style={{ background: "#4a3a8a" }}
-                  onClick={handleGoogleLogin}
-                >
-                  Create Account
-                </button>
-              </div>
-              <span className="back-link" onClick={() => setView("home")}>
-                ← Back
-              </span>
-            </>
-          )}
+        <div className="hero-content">
+          <div className="app-title">efficient.epp</div>
+          <div className="app-subtitle">expLore YoUr HaBits</div>
+          <div className="tagline">
+            Get in charge of your<br />
+            assignments, activities<br />
+            and sleep!
+          </div>
+          <button className="hero-cta" onClick={() => setView("login")}>
+            Press this button to hop<br />on through Google!
+          </button>
         </div>
       </div>
-    </>
+
+      <div className="hero-footer">
+        2026 All rights reserved to E Group LLC
+      </div>
+
+      <div className="login-area">
+        {view === "home" ? (
+          <p className="login-hint">
+            Click the button above to sign in
+          </p>
+        ) : (
+          <>
+            <div className="login-label">Google login</div>
+            <div className="login-card">
+              <div className="google-login-row">
+                <GoogleIcon />
+                <span>Login</span>
+              </div>
+              <button className="card-btn" onClick={handleGoogleLogin}>
+                Sign In
+              </button>
+              <button
+                className="card-btn card-btn-alt"
+                onClick={handleGoogleLogin}
+              >
+                Create Account
+              </button>
+            </div>
+            <span className="back-link" onClick={() => setView("home")}>
+              &larr; Back
+            </span>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
