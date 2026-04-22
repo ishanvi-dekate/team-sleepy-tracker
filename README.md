@@ -1,8 +1,8 @@
-# team-sleepy-tracker
+# team-efficient.epp
 
-We are team 4, and our app is called: **Sleepy Tracker**! 
+We are team 4, and our app is called: **efficient.epp**! 
 
-Our app is gonna be a sleep/wellness tracker for CCA students, as we've noticed that CCA students struggle to get proper sleep, as well as struggle to balance food, rest, schoolwork, and extracurriculars. 
+Our app is gonna be an assignment/wellness tracker for CCA students, as we've noticed that CCA students struggle to balance rest, schoolwork, and extracurriculars. 
 
 Our team is: 
 Ishanvi Dekate: Project Manager
