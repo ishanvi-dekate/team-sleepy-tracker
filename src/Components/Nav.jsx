@@ -1,5 +1,5 @@
-import './nav.css'
-import { useState } from 'react'
+import './nav.css';
+import { useState } from 'react';
 
 function Nav({setPage}){
     return(
