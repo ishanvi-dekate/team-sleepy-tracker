@@ -13,7 +13,8 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "firebase": "^12.12.0",
+    "@rolldown/binding-darwin-arm64": "^1.0.0-rc.16",
+    "firebase": "^12.12.1",
     "gh-pages": "^6.3.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
