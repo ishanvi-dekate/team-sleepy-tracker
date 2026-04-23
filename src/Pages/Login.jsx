@@ -76,7 +76,7 @@ function GoogleLogin() {
       {/* If user is logged in, show greeting, logout button, and messages */}
       {user ? (
         <div>
-          <h2>Hello! {user.displayName}</h2>
+          <h2>Hello! Welcome to efficient.epp! Ready to track your schedule, {user.displayName}?</h2>
           <button onClick={handleLogout}>Log Out</button>
 
           <ul>
@@ -91,6 +91,7 @@ function GoogleLogin() {
         // If no user is logged in, show login button
         <div>
           <button onClick={handleLogin}>Login with Google</button>
+          <p>Please login with your personal account!</p>
         </div>
       )}
     </div>
