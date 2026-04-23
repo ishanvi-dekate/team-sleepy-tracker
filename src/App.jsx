@@ -1,10 +1,5 @@
 import { useState } from "react";
-import { Nav } from "./Components/Nav.jsx";
-import {Home} from "./Pages/Home.jsx";
-import {ToDo} from "./Pages/Todo.jsx";
-import {Mental} from "./Pages/Mental.jsx";
-import {Profile} from "./Pages/Profile.jsx";
-import {Settings} from "./Pages/Settings.jsx";
+
 function App(){
     const [page, setPage] = useState("main")
     return(
