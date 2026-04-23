@@ -57,5 +57,4 @@ function Login({ onLogin }) {
     </main>
   );
 }
-
-export default Login;
+export default Login
