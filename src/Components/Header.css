@@ -1,0 +1,17 @@
+.header-left {
+    background-color: var(--color-10);
+}
+.header-brand {
+    color: #FFF;
+    justify-content:center;
+    font-size: 24;
+    font-family: "etna", sans-serif;
+}
+.header-logo{
+    border-color: lightblue;
+    border-width: 2px;
+}
+.header-right{
+    background-color: var(--color-3);
+
+}

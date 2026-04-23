@@ -111,3 +111,9 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+@font-face {
+  font-family: 'etna';
+  src: url('fonts/etna-regular.woff2') format('woff2');
+  font-weight:normal;
+  font-syle: normal;
+}
