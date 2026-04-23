@@ -23,6 +23,7 @@ function Login({ onLogin }) {
   };
 
   return (
+    <>
     <main className="login-page">
       <section className="login-card">
         <h1>Login</h1>
@@ -55,6 +56,7 @@ function Login({ onLogin }) {
         </form>
       </section>
     </main>
+    </>
   );
 }
 export default Login
