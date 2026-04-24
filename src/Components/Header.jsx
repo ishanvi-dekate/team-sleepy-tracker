@@ -13,7 +13,7 @@ function Header({ user }) {
           <circle cx="50" cy="50" r="2.5" fill="#FFFFFF"/>
         </svg>
         <div className="header-brand">
-          <span className="header-name">efficient.epp </span>
+          <span className="header-name">efficient.epp</span>
           <span className="header-tag">explore your habits</span>
         </div>
       </div>
