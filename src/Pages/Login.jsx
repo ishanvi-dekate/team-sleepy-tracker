@@ -4,73 +4,28 @@ import { db, auth, provider } from './firebase.js';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'; // Auth methods
 import { collection, getDocs } from 'firebase/firestore'; // Firestore methods
 
-function GoogleLogin() {
-  // State to hold the logged-in user
-  const [user, setUser] = useState(null);
+function Login({ onLogin }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  // State to hold messages from Firestore
-  const [messages, setMessages] = useState([]);
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
-  // Monitor authentication status (e.g., login/logout) in real time
-  useEffect(() => {
-    // Set up a listener that triggers every time the auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); // Update the user state with the logged-in user
-    });
-
-    // Clean up the listener when the component unmounts
-    return () => unsubscribe();
-  }, []);
-
-  // Handle Google login using a popup window
-  const handleLogin = async () => {
-    try {
-      await signInWithPopup(auth, provider); // Triggers Google login flow
-    } catch (error) {
-      console.error('Login failed', error); // Catch and display any login errors
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password.");
+      return;
     }
-  };
 
-  // Handle logout for the authenticated user
-  const handleLogout = async () => {
-    try {
-      await signOut(auth); // Signs out the current user
-      setUser(null); // Clear the user from local state
-    } catch (error) {
-      console.error('Logout failed', error); // Catch and display logout errors
+    if (!email.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
     }
+
+    setError("");
+    onLogin?.();
   };
 
-  // Fetch all messages from the "messages" collection in Firestore
-  const fetchMessages = async () => {
-    const snapshot = await getDocs(collection(db, 'messages')); // Get all documents
-    const list = snapshot.docs.map(doc => doc.data()); // Convert docs to plain JS objects
-    setMessages(list); // Update the messages state
-  };
-
-  // Add a new message to Firestore
-  const sendMessage = async () => {
-    if (!input.trim()) return; // Don't send empty messages
-
-    // Add a new message with the user's name and current timestamp
-    await addDoc(collection(db, 'messages'), {
-      text: input,
-      name: user.displayName,
-      timestamp: Date.now()
-    });
-
-    setInput(''); // Clear the input field
-    fetchMessages(); // Refresh the message list after sending
-  };
-
-  // Re-fetch messages any time the user logs in
-  useEffect(() => {
-    if (user) {
-      fetchMessages();
-    }
-  }, [user]);
-
-  // UI rendering
   return (
     <div>
       {/* If user is logged in, show greeting, logout button, and messages */}
@@ -95,6 +50,41 @@ function GoogleLogin() {
         </div>
       )}
     </div>
+    <>
+    <></>
+    <main className="login-page">
+      <section className="login-card">
+        <h1>Login</h1>
+        <p>Sign in to continue using efficient.epp.</p>
+
+        {error && <p className="login-error">{error}</p>}
+
+        <form onSubmit={handleSubmit}>
+          <label>
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
+            />
+          </label>
+
+          <button type="submit">Log In</button>
+        </form>
+      </section>
+    </main>
+    </>
   );
 }
-export default GoogleLogin;
+export default Login
