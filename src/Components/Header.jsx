@@ -16,7 +16,7 @@ function Header({ user }) {
           <span className="header-name">efficient.epp</span>
           <span className="header-tag">explore your habits</span>
         </div>
-      </div>
+      </div>    
 
       {user && (
         <div className="header-right">

@@ -2,7 +2,7 @@
   --text: #fdfdfd;
   --text-h: #ffffff;
   --bg: #fff;
-  --border: var(--border-color:#2e303a);
+  --border: var(--color);
   --code-bg: #f4f3ec;
   --accent: #aa3bff;
   --accent-bg: rgba(170, 59, 255, 0.1);
@@ -48,7 +48,7 @@
   --color-15:#3D0E61;
 }
 
-  #social .button-icon {
+  .button-icon {
     filter: invert(1) brightness(2);
   }
 
@@ -111,3 +111,10 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+@font-face {
+  font-family: 'etna';
+  src: url('fonts/etna-regular.woff2') format('woff2');
+  font-weight:normal;
+  font-syle: normal;
+}
+
