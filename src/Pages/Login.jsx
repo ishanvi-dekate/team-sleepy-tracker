@@ -1,6 +1,6 @@
 // Import React hooks and Firebase functionality
 import { useEffect, useState } from 'react';
-import { db, auth, provider } from './firebase.js';
+import { db, auth, provider } from 'team-efficient-epp\src\firebase.js';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'; // Auth methods
 import { collection, getDocs } from 'firebase/firestore'; // Firestore methods
 
@@ -27,6 +27,7 @@ function Login({ onLogin }) {
   };
 
   return (
+    <>
     <div>
       {/* If user is logged in, show greeting, logout button, and messages */}
       {user ? (
@@ -50,8 +51,7 @@ function Login({ onLogin }) {
         </div>
       )}
     </div>
-    <>
-    <></>
+    
     <main className="login-page">
       <section className="login-card">
         <h1>Login</h1>
