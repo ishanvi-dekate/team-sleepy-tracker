@@ -75,6 +75,28 @@ function Info({ setPage }) {
 
   return (
     <main className="info-page">
+      <button
+        type="button"
+        onClick={() => setPage('Profile')}
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          left: '1rem',
+          background: 'rgba(255, 255, 255, 0.9)',
+          color: '#4a3f9e',
+          border: 'none',
+          borderRadius: '8px',
+          padding: '0.5rem 1rem',
+          fontFamily: 'inherit',
+          fontSize: '0.9rem',
+          fontWeight: 600,
+          cursor: 'pointer',
+          zIndex: 10,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+        }}
+      >
+        Back
+      </button>
       <div className="info-banner">
         <h1 className="info-title">Thank you for signing up for efficient.epp!</h1>
         <p className="info-subtitle">There is just one more thing you need to do</p>
