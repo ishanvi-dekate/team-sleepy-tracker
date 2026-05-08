@@ -401,7 +401,7 @@ export default function ChatBot({ user, setPage }) {
           <div className="cb-header">
             <span className="cb-title">
               <span className="cb-status-dot" />
-              AI Assistant
+             Eppy
             </span>
             <div className="cb-header-actions">
               <button

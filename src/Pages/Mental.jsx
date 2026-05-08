@@ -106,12 +106,9 @@ function Mental() {
           </div>
 
           {/* Center submit button */}
-          <button
-            className={`mental-submit ${celebrating ? "celebrating" : ""}`}
-            onClick={handleSubmit}
-          >
+         {/* <button className={`mental-submit ${celebrating ? 'celebrating' : ''}`} onClick={handleSubmit}> 
             Click to<br />upload it!
-          </button>
+          </button>*/}
 
           {/* Right column */}
           <div className="mental-column">

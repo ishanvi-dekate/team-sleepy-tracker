@@ -1,7 +1,9 @@
 .app-nav {
   width: 100%;
   background: #1E1B4B;
-  padding: 1.5rem 0.5rem;
+  padding: 0rem 0.5rem;
+  position: fixed;
+  bottom: 0;
 }
 
 .app-nav-list {

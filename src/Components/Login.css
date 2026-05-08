@@ -1,7 +1,7 @@
 .login-page-form {
   width: 100%;
   min-height: 100vh;
-  background: #1a1a2e;
+  background: #6e5fd0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,7 +24,6 @@
 .login-card h1 {
   font-family: 'Fredoka', 'Nunito', system-ui, sans-serif;
   font-size: 2rem;
-  font-weight: 700;
   color: #3d2c7a;
   margin: 0 0 0.25rem;
   text-align: center;
@@ -122,7 +121,7 @@
 }
 
 .login-submit-btn {
-  background: #3d2c7a;
+  background: #6e5fd0;
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -133,13 +132,13 @@
   cursor: pointer;
   transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
   width: 100%;
-  box-shadow: 0 4px 14px rgba(61, 44, 122, 0.3);
+  box-shadow: 0 4px 14px rgba(110, 95, 208, 0.3);
 }
 
 .login-submit-btn:hover {
   background: #4e3a90;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(61, 44, 122, 0.35);
+  box-shadow: 0 6px 18px rgba(110, 95, 208, 0.35);
 }
 
 .login-submit-btn:active {
@@ -183,36 +182,28 @@
   background: none;
   border: none;
   color: #6e5fd0;
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: inherit;
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   text-align: center;
   padding: 0.25rem;
-  transition: color 0.15s;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.login-signup-link:hover {
-  color: #3d2c7a;
+  transition: color 0.15s ease;
 }
 
 .login-back-btn {
-  background: none;
+  background: transparent;
   border: none;
-  color: #9ca3af;
-  font-family: 'Nunito', system-ui, sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
+  color: #6e5fd0;
+  font-family: inherit;
+  font-size: 0.9rem;
   cursor: pointer;
   text-align: center;
   padding: 0.25rem;
-  transition: color 0.15s;
-}
+  }
 
 .login-back-btn:hover {
-  color: #6b7280;
+  color: #5a4bb8;
 }
 
 @media (max-width: 480px) {

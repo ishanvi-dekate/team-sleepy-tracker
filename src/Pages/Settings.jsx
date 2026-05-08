@@ -116,7 +116,7 @@ function NotificationsModal() {
     getDoc(doc(db, 'users', user.uid, 'settings', 'notifications')).then((snap) => {
       if (snap.exists()) setPrefs((p) => ({ ...p, ...snap.data() }));
     });
-  }, []);
+  }, [user]);
 
   const toggle = (key) => setPrefs((p) => ({ ...p, [key]: !p[key] }));
 
@@ -309,7 +309,7 @@ function FocusModeModal() {
       </p>
       <div className="sm-focus-wrap">
         <span className="sm-focus-label">
-          {enabled ? '🎯 Focus Mode is ON' : '😌 Focus Mode is OFF'}
+          {enabled ? 'Focus Mode is ON' : 'Focus Mode is OFF'}
         </span>
         <button
           className={`sm-toggle sm-toggle-lg ${enabled ? 'on' : ''}`}
@@ -340,10 +340,10 @@ function PersonalInfoModal() {
 
   useEffect(() => {
     if (!user) return;
-    getDoc(doc(db, 'users', user.uid)).then((snap) => {
+    getDoc(doc(db, 'users', user.uid, 'profile', 'data')).then((snap) => {
       if (snap.exists()) setForm((f) => ({ ...f, ...snap.data() }));
     });
-  }, []);
+  }, [user]);
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
@@ -351,7 +351,7 @@ function PersonalInfoModal() {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'users', user.uid), { ...form, updatedAt: new Date().toISOString() }, { merge: true });
+      await setDoc(doc(db, 'users', user.uid, 'profile', 'data'), form);
       setStatus('Profile saved!');
       setTimeout(() => setStatus(''), 2500);
     } catch {
@@ -442,7 +442,7 @@ function DangerZoneModal({ setPage }) {
   return (
     <>
       <p className="sm-info sm-danger-info">
-        ⚠️ Deleting your account is permanent and cannot be undone. All your todos, profile info, and settings will be lost forever.
+        Deleting your account is permanent and cannot be undone. All your todos, profile info, and settings will be lost forever.
       </p>
 
       <div className="sm-field">
