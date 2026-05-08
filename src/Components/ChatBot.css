@@ -271,6 +271,92 @@
   color: #ffffff;
 }
 
+/* ── Config panel ────────────────────────────────────────────────────────── */
+.cb-icon-active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+}
+
+.cb-config {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem 0.9rem;
+  overflow-y: auto;
+}
+
+.cb-config-desc {
+  font-size: 0.78rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.cb-config-textarea {
+  flex: 1;
+  border: 1.5px solid #dce8ff;
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #1f2937;
+  resize: none;
+  outline: none;
+  background: #fafbff;
+  line-height: 1.55;
+  transition: border-color 0.15s;
+}
+
+.cb-config-textarea:focus {
+  border-color: #A5BDF4;
+  background: #ffffff;
+}
+
+.cb-config-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.cb-config-cancel {
+  background: none;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cb-config-cancel:hover { border-color: #9ca3af; color: #374151; }
+
+.cb-config-save {
+  background: #A5BDF4;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  font-size: 0.82rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.cb-config-save:hover:not(:disabled) { background: #8FAEE8; }
+.cb-config-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cb-config-saved {
+  font-size: 0.78rem;
+  color: #059669;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+}
+
 /* ── Mobile ──────────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .cb-panel {

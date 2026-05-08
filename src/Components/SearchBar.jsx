@@ -15,6 +15,7 @@ function SearchBar({ user, setPage }) {
   const [todos, setTodos]   = useState([]);
   const [open, setOpen]     = useState(false);
   const containerRef        = useRef(null);
+  const inputRef            = useRef(null);
 
   useEffect(() => {
     if (!user) return;
@@ -31,6 +32,18 @@ function SearchBar({ user, setPage }) {
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+        setOpen(true);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, []);
 
   const q = query.trim().toLowerCase();
@@ -62,9 +75,10 @@ function SearchBar({ user, setPage }) {
           <path d="M13 13l3.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
         </svg>
         <input
+          ref={inputRef}
           className="search-input"
           type="text"
-          placeholder="Search pages or tasks…"
+          placeholder="Search pages or tasks… ⌘K"
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}

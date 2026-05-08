@@ -50,6 +50,20 @@
   align-items: flex-start;
 }
 
+.tracker-log-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.tracker-planner-row {
+  flex-basis: 100%;
+  width: 100%;
+}
+
 @media (max-width: 640px) {
   .tracker-title {
     font-size: 2rem;

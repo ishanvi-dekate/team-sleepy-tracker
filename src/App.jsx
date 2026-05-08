@@ -75,19 +75,17 @@ function App() {
   return (
     <>
       {showHeader && <Header />}
-      {page === "LoginPage" && <LoginPage setPage={setPage} />}
-      {page === "Login" && <Login setPage={setPage} />}
-      {page === "Account" && <Account setPage={setPage} />}
-      {page === "Home" && <Home setPage={setPage} user={user} />}
-      {page === "Settings" && <Settings setPage={setPage} />}
-      {page === "Mental" && <Mental setPage={setPage} />}
-      {page ==="Profile" && <Profile setPage={setPage} />}
-      {page === "Info" && <Info setPage={setPage} />}
-
-
-      {page === "Todo" && <Tracker setPage={setPage} user={user} />}
-      {showNav && <Nav setPage={setPage} currentPage={page} />}
-      <ChatBot user={user} />
+      {page === "LoginPage" && <LoginPage setPage={navigateTo} />}
+      {page === "Login" && <Login setPage={navigateTo} />}
+      {page === "Account" && <Account setPage={navigateTo} />}
+      {page === "Home" && <Home setPage={navigateTo} user={user} />}
+      {page === "Settings" && <Settings setPage={navigateTo} />}
+      {page === "Mental" && <Mental setPage={navigateTo} />}
+      {page === "Profile" && <Profile setPage={navigateTo} />}
+      {page === "Info" && <Info setPage={navigateTo} />}
+      {page === "Todo" && <Tracker setPage={navigateTo} user={user} />}
+      {showNav && <Nav setPage={navigateTo} currentPage={page} />}
+      <ChatBot user={user} setPage={navigateTo} />
     </>
   );
 }

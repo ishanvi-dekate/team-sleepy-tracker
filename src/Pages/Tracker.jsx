@@ -2,6 +2,8 @@ import { useState } from 'react';
 import TodoList from '../Components/Todo';
 import CalendarManager from '../Components/Calander';
 import WeeklyPlanner from '../Components/WeeklyPlanner';
+import ActivityTracker from '../Components/ActivityTracker';
+import DistractionsTracker from '../Components/DistractionsTracker';
 import './Tracker.css';
 
 function formatDate(d) {
@@ -19,8 +21,14 @@ function Tracker({ setPage, user }) {
       <div className="tracker-content">
         <CalendarManager selectedDate={selectedDate} onSelectDate={setSelectedDate} />
         <TodoList user={user} selectedDate={selectedDate} />
+        <div className="tracker-log-col">
+          <ActivityTracker user={user} selectedDate={selectedDate} />
+          <DistractionsTracker user={user} selectedDate={selectedDate} />
+        </div>
+        <div className="tracker-planner-row">
+          <WeeklyPlanner user={user} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+        </div>
       </div>
-      <WeeklyPlanner user={user} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
     </div>
   );
 }

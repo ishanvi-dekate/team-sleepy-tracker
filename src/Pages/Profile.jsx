@@ -29,7 +29,7 @@ function Profile({ setPage }) {
           setProfile(docSnap.data());
           setEditData(docSnap.data());
         } else {
-          setError('No profile found. Please complete your profile setup first.');
+          setError('No profile found. Please complete your profile setup first. Or try to refresh it.');
         }
       } catch (err) {
         setError('Error loading profile: ' + err.message);

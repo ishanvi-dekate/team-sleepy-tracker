@@ -10,7 +10,6 @@
 /* Light blue banner with welcome message */
 .home-banner {
   position: relative;
-  overflow: hidden;
   background: #A5BDF4;
   padding: 1.5rem 2rem 1.75rem;
   display: flex;
@@ -19,7 +18,16 @@
   gap: 0.75rem;
 }
 
-.home-banner::after {
+/* Separate overflow-clipped container for the wave so the search dropdown can escape */
+.home-banner-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-banner-bg::after {
   content: '';
   position: absolute;
   top: -20%;
@@ -33,6 +41,8 @@
 }
 
 .home-title {
+  position: relative;
+  z-index: 1;
   margin: 0;
   color: #FFFFFF;
   font-family: 'Quicksand', 'Fredoka', system-ui, sans-serif;

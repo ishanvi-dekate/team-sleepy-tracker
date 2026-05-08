@@ -1,11 +1,13 @@
 import Card from "../Components/Card";
 import SearchBar from "../Components/SearchBar";
+import HomeChat from "../Components/HomeChat";
 import "./Home.css";
 
 function Home({ setPage, user }) {
   return (
     <main className="home-page">
       <div className="home-banner">
+        <div className="home-banner-bg" />
         <h2 className="home-title">Welcome Back, {user?.displayName || user?.email || ""}</h2>
         <SearchBar user={user} setPage={setPage} />
       </div>
@@ -21,6 +23,8 @@ function Home({ setPage, user }) {
           Monitor your sleep patterns.
         </Card>
       </section>
+
+      <HomeChat user={user} setPage={setPage} />
 
       <section className="home-icons">
         {/* To-Do: Checklist icon */}
@@ -48,17 +52,6 @@ function Home({ setPage, user }) {
             </svg>
           </div>
           <span className="icon-label">Mental State</span>
-        </button>
-
-        {/* Profile: Person icon */}
-        <button className="icon-btn icon-btn-pink" onClick={() => setPage('Profile')}>
-          <div className="icon-circle">
-            <svg className="icon-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="32" cy="22" r="9"/>
-              <path d="M14 54 C14 44 22 38 32 38 C42 38 50 44 50 54"/>
-            </svg>
-          </div>
-          <span className="icon-label">Profile</span>
         </button>
 
         {/* Settings: Gear icon */}

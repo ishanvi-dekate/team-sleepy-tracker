@@ -1,0 +1,198 @@
+/* Shared card styles for ActivityTracker and DistractionsTracker */
+
+.lc-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 420px;
+  width: 100%;
+  color: #1F2937;
+}
+
+/* ── Title ────────────────────────────────────────────────────────────────── */
+.lc-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.lc-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  color: #1F2937;
+}
+
+.lc-title-row .lc-title {
+  margin-bottom: 0;
+}
+
+.lc-total {
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+}
+
+.lc-total--distraction {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* ── Suggestion chips ─────────────────────────────────────────────────────── */
+.lc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.lc-chip {
+  border: none;
+  border-radius: 20px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.78rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.lc-chip:hover { opacity: 0.82; transform: scale(1.04); }
+
+.lc-chip--activity {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.lc-chip--distraction {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* ── Input row ────────────────────────────────────────────────────────────── */
+.lc-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.lc-input {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: #1F2937;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.lc-input:focus { border-color: #A5BDF4; }
+
+.lc-input--flex { flex: 1; min-width: 120px; }
+.lc-input--sm   { width: 90px; flex-shrink: 0; }
+
+.lc-add-btn {
+  padding: 0.45rem 1rem;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lc-add-btn:hover { transform: scale(1.04); }
+.lc-add-btn:active { transform: scale(0.96); }
+
+.lc-add-btn--activity   { background: #34d399; }
+.lc-add-btn--activity:hover   { background: #10b981; }
+
+.lc-add-btn--distraction { background: #fbbf24; color: #1F2937; }
+.lc-add-btn--distraction:hover { background: #f59e0b; }
+
+/* ── List ─────────────────────────────────────────────────────────────────── */
+.lc-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lc-empty {
+  color: #aaa;
+  font-size: 0.88rem;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.lc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  transition: background 0.15s, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+}
+
+.lc-item:hover {
+  transform: translateX(3px);
+  box-shadow: 2px 2px 10px rgba(115, 100, 210, 0.1);
+}
+
+.lc-item--exit {
+  animation: lc-slide-out 0.3s ease-in forwards;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+@keyframes lc-slide-out {
+  to { opacity: 0; transform: translateX(16px); max-height: 0; padding: 0; margin: 0; }
+}
+
+.lc-item-icon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.lc-item-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #1F2937;
+}
+
+.lc-badge {
+  font-size: 0.73rem;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 0.1rem 0.45rem;
+  white-space: nowrap;
+}
+
+.lc-badge--activity   { background: #d1fae5; color: #065f46; }
+.lc-badge--distraction { background: #fef3c7; color: #92400e; }
+
+.lc-delete-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0 0.2rem;
+  transition: color 0.15s, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lc-delete-btn:hover {
+  color: #e55;
+  transform: scale(1.3) rotate(15deg);
+}

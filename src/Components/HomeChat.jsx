@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import {
-  collection, addDoc, getDocs, deleteDoc, updateDoc, setDoc,
-  doc, query, orderBy, limit, getDoc,
+  collection, addDoc, getDocs, updateDoc, setDoc,
+  doc, query, orderBy, getDoc, deleteDoc,
 } from 'firebase/firestore';
-import './ChatBot.css';
+import './HomeChat.css';
 
-// Dev:        Vite middleware proxies /ai/chat → GitHub Models using server-side GITHUB_TOKEN
-// Production: calls GitHub Models directly from the browser using VITE_GITHUB_TOKEN
 async function callAI(messages) {
   if (import.meta.env.DEV) {
     const res = await fetch('/ai/chat', {
@@ -35,7 +33,6 @@ async function callAI(messages) {
   return data.choices?.[0]?.message?.content ?? '';
 }
 
-// ── Firestore tool execution ──────────────────────────────────────────────────
 async function executeTool(name, args, user, setPage) {
   const todosRef = collection(db, 'users', user.uid, 'todos');
 
@@ -74,7 +71,6 @@ async function executeTool(name, args, user, setPage) {
     await deleteDoc(doc(db, 'users', user.uid, 'todos', args.id));
     return { success: true };
   }
-
   if (name === 'get_profile') {
     const snap = await getDoc(doc(db, 'users', user.uid));
     return snap.exists() ? snap.data() : {};
@@ -91,7 +87,6 @@ async function executeTool(name, args, user, setPage) {
     await setDoc(doc(db, 'users', user.uid), patch, { merge: true });
     return { success: true, updated: Object.keys(patch).filter(k => k !== 'updatedAt') };
   }
-
   if (name === 'get_notifications') {
     const snap = await getDoc(doc(db, 'users', user.uid, 'settings', 'notifications'));
     return snap.exists() ? snap.data() : { emailReminders: false, weeklyDigest: false, taskDeadlines: false };
@@ -105,11 +100,9 @@ async function executeTool(name, args, user, setPage) {
     await setDoc(doc(db, 'users', user.uid, 'settings', 'notifications'), patch, { merge: true });
     return { success: true };
   }
-
   if (name === 'get_focus_mode') {
     const snap = await getDoc(doc(db, 'users', user.uid, 'settings', 'focusMode'));
-    const enabled = snap.exists() ? !!snap.data().enabled : false;
-    return { enabled };
+    return { enabled: snap.exists() ? !!snap.data().enabled : false };
   }
   if (name === 'set_focus_mode') {
     const enabled = !!args.enabled;
@@ -117,7 +110,6 @@ async function executeTool(name, args, user, setPage) {
     document.body.classList.toggle('focus-mode', enabled);
     return { success: true, enabled };
   }
-
   if (name === 'navigate_to') {
     const VALID = ['Home','Settings','Mental','Profile','Todo'];
     const page = args.page;
@@ -125,37 +117,34 @@ async function executeTool(name, args, user, setPage) {
     setPage(page);
     return { success: true, navigatedTo: page };
   }
-
   if (name === 'get_mental_checks') {
     const count = Math.min(args.count ?? 5, 20);
     const snap = await getDocs(
-      query(collection(db, 'users', user.uid, 'mentalChecks'), orderBy('submittedAt', 'desc'), limit(count))
+      query(collection(db, 'users', user.uid, 'mentalChecks'), orderBy('submittedAt', 'desc'))
     );
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return snap.docs.slice(0, count).map(d => ({ id: d.id, ...d.data() }));
   }
-
   return { error: 'Unknown tool' };
 }
 
 function actionLabel(name, args) {
   switch (name) {
-    case 'list_todos':         return args?.date ? `Reading tasks for ${args.date}…` : 'Reading your tasks…';
-    case 'add_todo':           return `Adding "${args?.text}" on ${args?.date}…`;
-    case 'update_todo':        return 'Updating task…';
-    case 'delete_todo':        return 'Removing task…';
-    case 'get_profile':        return 'Reading your profile…';
-    case 'update_profile':     return 'Updating your profile…';
-    case 'get_notifications':  return 'Reading notification settings…';
-    case 'update_notifications': return 'Updating notification settings…';
-    case 'get_focus_mode':     return 'Checking focus mode…';
-    case 'set_focus_mode':     return args?.enabled ? 'Turning on focus mode…' : 'Turning off focus mode…';
-    case 'navigate_to':        return `Navigating to ${args?.page}…`;
-    case 'get_mental_checks':  return 'Reading your mental check history…';
-    default:                   return 'Working…';
+    case 'list_todos':            return args?.date ? `Reading tasks for ${args.date}…` : 'Reading your tasks…';
+    case 'add_todo':              return `Adding "${args?.text}" on ${args?.date}…`;
+    case 'update_todo':           return 'Updating task…';
+    case 'delete_todo':           return 'Removing task…';
+    case 'get_profile':           return 'Reading your profile…';
+    case 'update_profile':        return 'Updating your profile…';
+    case 'get_notifications':     return 'Reading notification settings…';
+    case 'update_notifications':  return 'Updating notification settings…';
+    case 'get_focus_mode':        return 'Checking focus mode…';
+    case 'set_focus_mode':        return args?.enabled ? 'Turning on focus mode…' : 'Turning off focus mode…';
+    case 'navigate_to':           return `Navigating to ${args?.page}…`;
+    case 'get_mental_checks':     return 'Reading your mental check history…';
+    default:                      return 'Working…';
   }
 }
 
-// Try to parse a JSON tool call from the model's reply
 function parseToolCall(text) {
   const trimmed = text.trim();
   if (!trimmed.startsWith('{')) return null;
@@ -201,64 +190,42 @@ Use this profile context to give personalized, specific advice — not generic t
 ## Tools
 You have full control over the student's app. To call a tool, respond with ONLY a raw JSON object — no markdown, no explanation before or after it:
 
-### Schedule / Todos
-{"tool":"list_todos","args":{}}                                              ← all todos
-{"tool":"list_todos","args":{"date":"YYYY-MM-DD"}}                           ← specific day
-{"tool":"list_todos","args":{"dateFrom":"YYYY-MM-DD","dateTo":"YYYY-MM-DD"}} ← date range (use for "this week", "next week", etc.)
+{"tool":"list_todos","args":{}}
+{"tool":"list_todos","args":{"date":"YYYY-MM-DD"}}
+{"tool":"list_todos","args":{"dateFrom":"YYYY-MM-DD","dateTo":"YYYY-MM-DD"}}
 {"tool":"add_todo","args":{"text":"task name","date":"YYYY-MM-DD","dueTime":"HH:MM"}}
 {"tool":"update_todo","args":{"id":"<id>","text":"...","date":"YYYY-MM-DD","dueTime":"HH:MM","done":true}}
 {"tool":"delete_todo","args":{"id":"<id>"}}
-Results are sorted by date, then by dueTime. Always use dateFrom/dateTo when the user asks about a week or range.
-
-### Profile
 {"tool":"get_profile","args":{}}
-{"tool":"update_profile","args":{"username":"...","bedtime":"11pm","sleepHours":"7","stress":"...","distractions":"...","extracurriculars":"...","homeworkClass":"...","courses":"...","goal1":"...","goal2":"...","goal3":"..."}}
-(Only include the fields you want to change in update_profile.)
-
-### Notifications
+{"tool":"update_profile","args":{"username":"...","bedtime":"11pm"}}
 {"tool":"get_notifications","args":{}}
-{"tool":"update_notifications","args":{"emailReminders":true,"weeklyDigest":false,"taskDeadlines":true}}
-
-### Focus Mode
+{"tool":"update_notifications","args":{"emailReminders":true,"weeklyDigest":false}}
 {"tool":"get_focus_mode","args":{}}
 {"tool":"set_focus_mode","args":{"enabled":true}}
-
-### Navigation — take the student to a page
 {"tool":"navigate_to","args":{"page":"Home"}}
-Valid pages: Home, Settings, Mental, Profile, Todo
-
-### Mental Health History
 {"tool":"get_mental_checks","args":{"count":5}}
 
 ## Rules
 - Always call list_todos before editing todos — you need real IDs.
-- When asked to fix or optimise a schedule, use the tools and actually make the changes.
-- When asked to change profile info, settings, or notifications — do it with the tools.
 - After all tool calls are done, reply in plain friendly text summarising what you did.
 - When NOT calling a tool, respond in plain conversational text only — no JSON.
 - Give specific, actionable advice based on the student's profile.
 - Keep responses concise and encouraging.`;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-export default function ChatBot({ user, setPage }) {
-  const [open, setOpen]                   = useState(false);
+export default function HomeChat({ user, setPage }) {
   const [messages, setMessages]           = useState([]);
   const [input, setInput]                 = useState('');
   const [loading, setLoading]             = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
-  const [configOpen, setConfigOpen]       = useState(false);
-  const [instrDraft, setInstrDraft]       = useState('');
-  const [instrSaving, setInstrSaving]     = useState(false);
-  const [instrSaved, setInstrSaved]       = useState(false);
   const historyRef                        = useRef([]);
   const profileRef                        = useRef(null);
   const instrRef                          = useRef('');
   const bottomRef                         = useRef(null);
+  const inputRef                          = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  // Load user profile + chat history from Firestore
   useEffect(() => {
     if (!user) return;
 
@@ -267,11 +234,7 @@ export default function ChatBot({ user, setPage }) {
       .catch(() => {});
 
     const instrPromise = getDoc(doc(db, 'users', user.uid, 'settings', 'aiInstructions'))
-      .then(snap => {
-        const text = snap.exists() ? (snap.data().text || '') : '';
-        instrRef.current = text;
-        setInstrDraft(text);
-      })
+      .then(snap => { instrRef.current = snap.exists() ? (snap.data().text || '') : ''; })
       .catch(() => {});
 
     const historyPromise = getDocs(
@@ -306,8 +269,7 @@ export default function ChatBot({ user, setPage }) {
     saveToFirestore('user', userText);
 
     try {
-      // Build full message array: system (with live profile) + history + new user message
-      const messages = [
+      const msgs = [
         { role: 'system', content: buildSystemPrompt(profileRef.current, instrRef.current) },
         ...historyRef.current,
         { role: 'user', content: userText },
@@ -316,22 +278,17 @@ export default function ChatBot({ user, setPage }) {
       let finalText = '';
       let iterations = 0;
 
-      // Agentic loop — keep going while the model returns tool calls
       while (iterations < 10) {
         iterations++;
-        const text = await callAI(messages);
+        const text = await callAI(msgs);
         const call = parseToolCall(text);
 
         if (call) {
-          // Model wants to call a tool
           pushMessage('action', actionLabel(call.tool, call.args ?? {}), true);
           const result = await executeTool(call.tool, call.args ?? {}, user, setPage);
-
-          // Feed the tool call + result back into the conversation
-          messages.push({ role: 'assistant', content: text });
-          messages.push({ role: 'user', content: `Tool result for ${call.tool}: ${JSON.stringify(result)}` });
+          msgs.push({ role: 'assistant', content: text });
+          msgs.push({ role: 'user', content: `Tool result for ${call.tool}: ${JSON.stringify(result)}` });
         } else {
-          // Final plain-text response
           finalText = text;
           break;
         }
@@ -342,13 +299,11 @@ export default function ChatBot({ user, setPage }) {
       pushMessage('assistant', finalText);
       saveToFirestore('assistant', finalText);
 
-      // Update in-memory history for next turn
       historyRef.current = [
         ...historyRef.current,
         { role: 'user',      content: userText  },
         { role: 'assistant', content: finalText },
       ];
-
     } catch (err) {
       console.error('AI error:', err?.message ?? err);
       pushMessage('assistant', `Error: ${err?.message ?? 'Unknown error'}`);
@@ -357,151 +312,80 @@ export default function ChatBot({ user, setPage }) {
     setLoading(false);
   };
 
-  const saveInstructions = async () => {
-    if (!user) return;
-    setInstrSaving(true);
-    try {
-      await setDoc(doc(db, 'users', user.uid, 'settings', 'aiInstructions'), { text: instrDraft });
-      instrRef.current = instrDraft;
-      setInstrSaved(true);
-      setTimeout(() => setInstrSaved(false), 2000);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setInstrSaving(false);
-    }
-  };
-
-  const clearChat = async () => {
-    if (!user || loading) return;
-    const snap = await getDocs(collection(db, 'users', user.uid, 'chatHistory'));
-    await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'users', user.uid, 'chatHistory', d.id))));
-    setMessages([]);
-    historyRef.current = [];
-  };
-
   if (!user) return null;
 
   return (
-    <>
-      <button className="cb-fab" onClick={() => setOpen(o => !o)} aria-label="Toggle AI chat">
-        {open ? (
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        )}
-      </button>
-
-      {open && (
-        <div className="cb-panel">
-          <div className="cb-header">
-            <span className="cb-title">
-              <span className="cb-status-dot" />
-             Eppy
-            </span>
-            <div className="cb-header-actions">
-              <button
-                className={`cb-clear ${configOpen ? 'cb-icon-active' : ''}`}
-                onClick={() => setConfigOpen(o => !o)}
-                title="Custom instructions"
-              >
-                <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
-                  <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </button>
-              <button
-                className="cb-clear"
-                onClick={clearChat}
-                disabled={loading || messages.length === 0}
-                title="Clear chat history"
-              >
-                <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
-                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-              <button className="cb-close" onClick={() => setOpen(false)}>✕</button>
-            </div>
-          </div>
-
-          {configOpen ? (
-            <div className="cb-config">
-              <p className="cb-config-desc">
-                Write plain English instructions to customize how the AI behaves. It will follow these on every message — personality, things to always remember, topics to focus on, etc.
-              </p>
-              <textarea
-                className="cb-config-textarea"
-                value={instrDraft}
-                onChange={e => setInstrDraft(e.target.value)}
-                placeholder={"e.g. Always be motivating and brief.\nRemember I'm trying to get into university.\nAlways check my schedule before giving advice.\nFocus on my math class above all others."}
-                rows={7}
-              />
-              <div className="cb-config-actions">
-                <button className="cb-config-cancel" onClick={() => { setInstrDraft(instrRef.current); setConfigOpen(false); }}>
-                  Cancel
-                </button>
-                <button className="cb-config-save" onClick={saveInstructions} disabled={instrSaving}>
-                  {instrSaving ? 'Saving…' : 'Save'}
-                </button>
-              </div>
-              {instrSaved && <p className="cb-config-saved">Saved! AI will follow these from now on.</p>}
-            </div>
-          ) : (
-            <>
-              <div className="cb-messages">
-                {messages.length === 0 && !loading && (
-                  <div className="cb-empty">
-                    <p>👋 Hi! I can manage your whole app for you.</p>
-                    <p>Try:<br/>
-                      <em>"Fix my schedule for tomorrow"</em><br/>
-                      <em>"Update my bedtime to 10:30pm"</em><br/>
-                      <em>"Turn on focus mode"</em><br/>
-                      <em>"Take me to the tracker"</em>
-                    </p>
-                  </div>
-                )}
-
-                {messages.map(msg => (
-                  <div key={msg.id} className={`cb-msg ${msg.isAction ? 'cb-action' : msg.role === 'user' ? 'cb-user' : 'cb-bot'}`}>
-                    {msg.isAction
-                      ? <span className="cb-action-chip">⚙ {msg.text}</span>
-                      : <span className="cb-bubble">{msg.text}</span>
-                    }
-                  </div>
-                ))}
-
-                {loading && (
-                  <div className="cb-msg cb-bot">
-                    <span className="cb-bubble cb-typing"><span /><span /><span /></span>
-                  </div>
-                )}
-                <div ref={bottomRef} />
-              </div>
-
-              <div className="cb-input-row">
-                <input
-                  className="cb-input"
-                  type="text"
-                  placeholder="Ask about your schedule…"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-                  disabled={loading}
-                />
-                <button className="cb-send" onClick={send} disabled={loading || !input.trim()}>
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-              </div>
-            </>
-          )}
+    <section className="hc-section">
+      <div className="hc-card">
+        <div className="hc-header">
+          <span className="hc-title">
+            <span className="hc-dot" />
+            AI Assistant
+          </span>
+          <span className="hc-hint">Ask me anything about your schedule or wellbeing</span>
         </div>
-      )}
-    </>
+
+        <div className="hc-messages">
+          {messages.length === 0 && !loading && (
+            <div className="hc-empty">
+              <p>What can I help you with today?</p>
+              <div className="hc-suggestions">
+                {[
+                  "What's on my schedule today?",
+                  "Add a task for tomorrow",
+                  "How's my week looking?",
+                  "Turn on focus mode",
+                ].map(s => (
+                  <button
+                    key={s}
+                    className="hc-suggestion"
+                    onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {messages.map(msg => (
+            <div
+              key={msg.id}
+              className={`hc-msg ${msg.isAction ? 'hc-action' : msg.role === 'user' ? 'hc-user' : 'hc-bot'}`}
+            >
+              {msg.isAction
+                ? <span className="hc-action-chip">⚙ {msg.text}</span>
+                : <span className="hc-bubble">{msg.text}</span>
+              }
+            </div>
+          ))}
+
+          {loading && (
+            <div className="hc-msg hc-bot">
+              <span className="hc-bubble hc-typing"><span /><span /><span /></span>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        <div className="hc-input-row">
+          <input
+            ref={inputRef}
+            className="hc-input"
+            type="text"
+            placeholder="Ask your AI assistant…"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+            disabled={loading}
+          />
+          <button className="hc-send" onClick={send} disabled={loading || !input.trim()}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
