@@ -10,14 +10,11 @@ export default defineConfig({
       configureServer(server) {
         // POST /ai/chat  →  GitHub Models API (gpt-4o, free, uses injected GITHUB_TOKEN)
         server.middlewares.use('/ai/chat', async (req, res) => {
-  let body = '';
-  req.on('data', c => (body += c));
-  req.on('end', async () => {
-    try {
-      const token = process.env.GITHUB_TOKEN || process.env.VITE_GITHUB_TOKEN;
-      console.log('🔍 GITHUB_TOKEN exists:', !!process.env.GITHUB_TOKEN);
-      console.log('🔍 VITE_GITHUB_TOKEN exists:', !!process.env.VITE_GITHUB_TOKEN);
-      console.log('🔍 token first 8 chars:', token ? token.slice(0, 8) : 'NONE');
+          let body = '';
+          req.on('data', c => (body += c));
+          req.on('end', async () => {
+            try {
+              const token = process.env.GITHUB_TOKEN || process.env.VITE_GITHUB_TOKEN;
               if (!token) {
                 res.statusCode = 401;
                 res.end('No token: add VITE_GITHUB_TOKEN to .env.local');
