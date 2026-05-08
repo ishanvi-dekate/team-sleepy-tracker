@@ -320,7 +320,7 @@ export default function HomeChat({ user, setPage }) {
         <div className="hc-header">
           <span className="hc-title">
             <span className="hc-dot" />
-            AI Assistant
+            Eppy.epp
           </span>
           <span className="hc-hint">Ask me anything about your schedule or wellbeing</span>
         </div>
