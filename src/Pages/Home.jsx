@@ -54,6 +54,17 @@ function Home({ setPage, user }) {
           <span className="icon-label">Mental State</span>
         </button>
 
+        {/* Profile: User icon */}
+<button className="icon-btn icon-btn-pink" onClick={() => setPage('Profile')}>
+  <div className="icon-circle">
+    <svg className="icon-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="32" cy="22" r="10"/>
+      <path d="M14 54 C14 44 22 38 32 38 C42 38 50 44 50 54"/>
+    </svg>
+  </div>
+  <span className="icon-label">Profile</span>
+</button>
+
   {/* Settings: Gear icon */}
   <button className="icon-btn icon-btn-orange" onClick={() => setPage('Settings')}>
     <div className="icon-circle">
