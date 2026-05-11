@@ -36,6 +36,7 @@
   border-radius: 8px;
   font-size: 0.85rem;
   color: #000000;
+  background-color: #fff;
   outline: none;
   transition: border-color 0.15s;
   width: 110px;
@@ -53,6 +54,7 @@
   border-radius: 8px;
   font-size: 0.9rem;
   color: black;
+  background-color: #fff;
   outline: none;
   transition: border-color 0.15s;
 }

@@ -70,8 +70,8 @@
   font-size: 1rem;
   font-family: inherit;
   min-width: 280px;
-  color: black;
-}
+  color: #000000;
+  background-color: #FFFFFF;}
 
 .info-username-input:focus {
   outline: none;

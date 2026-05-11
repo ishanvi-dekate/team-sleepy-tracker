@@ -25,7 +25,7 @@ function Login({ setPage }) {
       setPage("Home");
     } catch (err) {
       if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
-        setError("Incorrect email or password.");
+      setError("Incorrect email or password.");
       } else if (err.code === "auth/too-many-requests") {
         setError("Too many attempts. Please try again later.");
       } else {
@@ -107,6 +107,7 @@ function Login({ setPage }) {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
+              
             />
           </label>
 
@@ -117,6 +118,7 @@ function Login({ setPage }) {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Enter your password"
+            
             />
           </label>
 
