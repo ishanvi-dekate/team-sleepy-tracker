@@ -340,7 +340,7 @@ function PersonalInfoModal() {
 
   useEffect(() => {
     if (!user) return;
-    getDoc(doc(db, 'users', user.uid, 'profile', 'data')).then((snap) => {
+    getDoc(doc(db, 'users', user.uid)).then((snap) => {
       if (snap.exists()) setForm((f) => ({ ...f, ...snap.data() }));
     });
   }, [user]);
@@ -351,7 +351,7 @@ function PersonalInfoModal() {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'users', user.uid, 'profile', 'data'), form);
+      await setDoc(doc(db, 'users', user.uid), { ...form, updatedAt: new Date().toISOString() }, { merge: true });
       setStatus('Profile saved!');
       setTimeout(() => setStatus(''), 2500);
     } catch {
@@ -469,6 +469,15 @@ function DangerZoneModal({ setPage }) {
   );
 }
 
+// ─── Small SVG icons ─────────────────────────────────────────────────────────
+const IcoUser     = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0114 0"/></svg>;
+const IcoBell     = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>;
+const IcoWrench   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>;
+const IcoTarget   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+const IcoClipboard= () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>;
+const IcoDoor     = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
+const IcoAlert    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+
 // ─── Settings page ───────────────────────────────────────────────────────────
 function Settings({ setPage }) {
   const [activeModal, setActiveModal] = useState(null);
@@ -494,13 +503,13 @@ function Settings({ setPage }) {
   };
 
   const options = [
-    { label: 'Manage Account',         key: 'ManageAccount',  icon: '' },
-    { label: 'Notification Preferences', key: 'Notifications', icon: '' },
-    { label: 'Troubleshooting',         key: 'Troubleshooting', icon: '' },
-    { label: 'Focus Mode',              key: 'FocusMode',      icon: '' },
-    { label: 'Personal Information',    key: 'PersonalInfo',   icon: '' },
-    { label: 'Log Out',                 key: 'LogOut',         icon: '' },
-    { label: 'Danger Zone',             key: 'DangerZone',     icon: '', danger: true },
+    { label: 'Manage Account',           key: 'ManageAccount',   icon: <IcoUser /> },
+    { label: 'Notification Preferences', key: 'Notifications',   icon: <IcoBell /> },
+    { label: 'Troubleshooting',          key: 'Troubleshooting', icon: <IcoWrench /> },
+    { label: 'Focus Mode',               key: 'FocusMode',       icon: <IcoTarget /> },
+    { label: 'Personal Information',     key: 'PersonalInfo',    icon: <IcoClipboard /> },
+    { label: 'Log Out',                  key: 'LogOut',          icon: <IcoDoor /> },
+    { label: 'Danger Zone',              key: 'DangerZone',      icon: <IcoAlert />, danger: true },
   ];
 
   const handleClick = (opt) => {

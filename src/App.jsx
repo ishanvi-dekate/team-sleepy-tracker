@@ -13,6 +13,7 @@ import Tracker from "./Pages/Tracker.jsx";
 import Mental from "./Pages/Mental.jsx";
 import Profile from "./Pages/Profile.jsx";
 import Info from "./Pages/Info.jsx";
+import Study from "./Pages/Study.jsx";
 import ChatBot from "./Components/ChatBot.jsx";
 
 const LOGIN_PAGES = ["LoginPage", "Login"];
@@ -84,6 +85,7 @@ function App() {
       {page === "Profile" && <Profile setPage={navigateTo} />}
       {page === "Info" && <Info setPage={navigateTo} />}
       {page === "Todo" && <Tracker setPage={navigateTo} user={user} />}
+      {page === "Study" && <Study setPage={navigateTo} />}
       {showNav && <Nav setPage={navigateTo} currentPage={page} />}
       {page !== "Home" && <ChatBot user={user} setPage={navigateTo} />}
     </>

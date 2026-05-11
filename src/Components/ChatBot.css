@@ -1,39 +1,62 @@
 /* ── Floating action button ───────────────────────────────────────────────── */
 .cb-fab {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: #A5BDF4;
+  bottom: calc(82px + env(safe-area-inset-bottom));
+  right: 16px;
+  height: 48px;
+  padding: 0 18px 0 14px;
+  border-radius: 24px;
+  background: #7C6FE8;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 18px rgba(130, 160, 230, 0.45);
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(124, 111, 232, 0.4);
   z-index: 1000;
-  transition: background 0.2s, transform 0.18s, box-shadow 0.2s;
+  transition: background 0.15s, box-shadow 0.15s;
 }
 
 .cb-fab:hover {
-  background: #8FAEE8;
-  transform: scale(1.08);
-  box-shadow: 0 6px 22px rgba(130, 160, 230, 0.6);
+  background: #6558d4;
+  box-shadow: 0 6px 18px rgba(124, 111, 232, 0.5);
 }
 
-.cb-fab svg {
+.cb-fab:active { background: #5a4dc4; }
+
+.cb-fab--open {
+  width: 48px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.cb-fab--open svg {
   width: 22px;
   height: 22px;
   color: #ffffff;
 }
 
+.cb-fab-icon {
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.cb-fab-label {
+  font-family: 'Quicksand', system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
 /* ── Chat panel ───────────────────────────────────────────────────────────── */
 .cb-panel {
   position: fixed;
-  bottom: 90px;
-  right: 24px;
+  bottom: calc(140px + env(safe-area-inset-bottom));
+  right: 16px;
   width: 350px;
   height: 490px;
   background: #ffffff;
@@ -365,4 +388,194 @@
     width: auto;
     bottom: 82px;
   }
+}
+
+/* Mode badge in header */
+.cb-mode-badge {
+  margin-left: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+/* Mode picker grid in config */
+.cb-config-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6b7280;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.5rem;
+}
+
+.cb-config-section-title:not(:first-child) {
+  margin-top: 1.25rem;
+}
+
+.cb-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.cb-mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.7rem 0.85rem;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.cb-mode-card:hover {
+  background: #ffffff;
+  border-color: #c4b5fd;
+  transform: translateY(-1px);
+}
+
+.cb-mode-card-selected {
+  background: #f3f0ff;
+  border-color: #7364D2;
+}
+
+.cb-mode-card-icon {
+  font-size: 1.15rem;
+}
+
+.cb-mode-card-label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.cb-mode-card-desc {
+  font-size: 0.72rem;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+/* Attachment preview above input */
+.cb-attachments-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid #f0f0f5;
+  background: #fafafd;
+}
+
+.cb-attachment-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.78rem;
+  max-width: 180px;
+}
+
+.cb-attachment-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.cb-attachment-icon {
+  font-size: 1rem;
+}
+
+.cb-attachment-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.cb-attachment-remove {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  padding: 0 0.2rem;
+  line-height: 1;
+}
+
+.cb-attachment-remove:hover {
+  color: #1f2937;
+}
+
+.cb-attachment-loading {
+  font-style: italic;
+  color: #6b7280;
+}
+
+/* Attach button */
+.cb-attach-btn {
+  background: transparent;
+  border: none;
+  color: #7364D2;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.cb-attach-btn:hover:not(:disabled) {
+  background: #f3f0ff;
+}
+
+.cb-attach-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Attachments shown inside chat messages */
+.cb-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: inherit;
+}
+
+.cb-msg-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.cb-msg-image {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.cb-msg-file-chip {
+  background: rgba(255, 255, 255, 0.9);
+  color: #4b5563;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
 }

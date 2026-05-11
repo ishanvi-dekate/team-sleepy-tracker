@@ -46,6 +46,7 @@
   flex-wrap: wrap;
   gap: 1.5rem;
   padding: 2rem;
+  padding-bottom: calc(2rem + 70px + env(safe-area-inset-bottom));
   justify-content: center;
   align-items: flex-start;
 }

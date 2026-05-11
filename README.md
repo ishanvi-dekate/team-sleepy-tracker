@@ -11,3 +11,5 @@ Our app is gonna be a sleep/assignment tracker for CCA students, as we've notice
 - **Advaith Karthik** — UX/UI Designer
 - **Nathan Zhao** — Front-End Developer
 - **Anagh Nathwani** — Back-End Developer
+
+To access our application: https://effecient-epp.firebaseapp.com/ 

@@ -18,7 +18,7 @@ function ActivityTracker({ user, selectedDate }) {
     if (!user) return;
     getDoc(doc(db, 'users', user.uid)).then(snap => {
       const raw = snap.exists() ? snap.data().extracurriculars : '';
-      if (raw) setSuggestions(raw.split(',').map(s => s.trim()).filter(Boolean));
+      if (raw) setSuggestions(raw.split(/[,\n]+/).map(s => s.trim()).filter(Boolean));
     }).catch(() => {});
   }, [user]);
 

@@ -44,6 +44,7 @@
 .settings-content {
   flex: 1;
   padding: 3rem 2rem;
+  padding-bottom: calc(3rem + 70px + env(safe-area-inset-bottom));
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -114,8 +115,16 @@
 }
 
 .settings-btn-icon {
-  font-size: 1.1rem;
-  margin-right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.6rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.settings-button {
+  display: flex;
+  align-items: center;
 }
 
 @media (max-width: 640px) {

@@ -76,6 +76,27 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
+.home-card-link {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.15s ease;
+}
+
+.home-card-link:hover {
+  background: #8FA8E8;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(115, 100, 210, 0.25);
+}
+
+.home-card-link:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.08s;
+}
+
+.home-card-link:focus-visible {
+  outline: 2px solid #7C6FE8;
+  outline-offset: 2px;
+}
+
 .home-cards > *:nth-child(1) { animation-delay: 0.1s; }
 .home-cards > *:nth-child(2) { animation-delay: 0.18s; }
 .home-cards > *:nth-child(3) { animation-delay: 0.26s; }
@@ -87,10 +108,10 @@
 
 /* Icon buttons section */
 .home-icons {
-  padding: 1rem 2rem 3rem;
+  padding: 3rem 2rem calc(3rem + 80px + env(safe-area-inset-bottom));
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 2.25rem 2.5rem;
   justify-content: center;
   max-width: 1100px;
   margin: 0 auto;
@@ -178,6 +199,16 @@
 }
 .icon-btn-orange:hover .icon-circle {
   background: #FED7AA;
+}
+
+.icon-btn-teal .icon-circle {
+  background: #CCFBF1;
+}
+.icon-btn-teal .icon-svg {
+  color: #0F766E;
+}
+.icon-btn-teal:hover .icon-circle {
+  background: #99F6E4;
 }
 
 /* Label below icon */

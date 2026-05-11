@@ -11,7 +11,6 @@ function Login({ setPage }) {
   const [resetLoading, setResetLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 

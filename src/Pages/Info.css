@@ -70,6 +70,7 @@
   font-size: 1rem;
   font-family: inherit;
   min-width: 280px;
+  color: black;
 }
 
 .info-username-input:focus {
@@ -114,6 +115,7 @@
   font-family: inherit;
   background: #FFFFFF;
   resize: vertical;
+  color: black;
 }
 
 .info-card input:focus,
@@ -148,11 +150,12 @@
 .info-goal-row input {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #D1D5DB;
+  border: 1px solid #000000;
   border-radius: 8px;
   font-size: 0.95rem;
   font-family: inherit;
-  background: #FFFFFF;
+  background: #000000;
+  color: black;
 }
 
 /* Note text */
