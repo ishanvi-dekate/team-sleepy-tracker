@@ -17,27 +17,59 @@ const MODES = [
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
+// Plays a clear three-beep alarm using Web Audio (no external file needed)
+function playAlarm() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const beep = (freq, start, dur, vol = 0.35) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(vol, ctx.currentTime + start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.02);
+    };
+    // Two short pings + one long tone
+    beep(880,  0,    0.22);
+    beep(880,  0.3,  0.22);
+    beep(1320, 0.65, 0.55);
+    setTimeout(() => ctx.close().catch(() => {}), 1800);
+  } catch (e) { /* ignore audio failures */ }
+}
+
 function PomodoroTimer() {
   const [modeIdx, setModeIdx] = useState(0);
   const [customMins, setCustomMins] = useState({ work: 25, short: 5, long: 15 });
   const [seconds, setSeconds] = useState(25 * 60);
   const [running, setRunning] = useState(false);
   const [sessions, setSessions] = useState(0);
+  const [alarming, setAlarming] = useState(false);
   const intervalRef = useRef(null);
+  const timeoutRef  = useRef(null);
+  const endAtRef    = useRef(null);
+  const firedRef    = useRef(false);
   const mode = MODES[modeIdx];
   const totalMins = customMins[mode.key];
 
   const reset = useCallback((idx = modeIdx, mins = null) => {
     clearInterval(intervalRef.current);
+    clearTimeout(timeoutRef.current);
+    endAtRef.current = null;
+    firedRef.current = false;
     setRunning(false);
+    setAlarming(false);
     setSeconds((mins ?? customMins[MODES[idx].key]) * 60);
   }, [modeIdx, customMins]);
 
   const switchMode = (idx) => {
-    clearInterval(intervalRef.current);
-    setRunning(false);
+    reset(idx);
     setModeIdx(idx);
-    setSeconds(customMins[MODES[idx].key] * 60);
   };
 
   const handleDurationChange = (e) => {
@@ -46,28 +78,79 @@ function PomodoroTimer() {
     setSeconds(v * 60);
   };
 
+  // Toggle start/pause. Tracks an absolute end-time so background tab throttling
+  // doesn't slow the countdown.
+  const toggleRun = () => {
+    if (running) {
+      // Pause: capture remaining seconds, stop ticking
+      if (endAtRef.current) {
+        setSeconds(Math.max(0, Math.ceil((endAtRef.current - Date.now()) / 1000)));
+      }
+      setRunning(false);
+    } else {
+      // Start: request notification permission once, set absolute end
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().catch(() => {});
+      }
+      endAtRef.current = Date.now() + seconds * 1000;
+      firedRef.current = false;
+      setAlarming(false);
+      setRunning(true);
+    }
+  };
+
+  // Effect: while running, refresh display and schedule the exact completion time.
   useEffect(() => {
-    if (!running) { clearInterval(intervalRef.current); return; }
-    intervalRef.current = setInterval(() => {
-      setSeconds(s => {
-        if (s <= 1) {
-          clearInterval(intervalRef.current);
-          setRunning(false);
-          if (MODES[modeIdx].key === 'work') setSessions(n => n + 1);
-          if (Notification.permission === 'granted') {
-            new Notification('efficient.epp', {
-              body: MODES[modeIdx].key === 'work'
-                ? 'Focus session done! Take a break.'
-                : 'Break over. Back to work!',
-            });
-          }
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(intervalRef.current);
+    if (!running || !endAtRef.current) return;
+
+    const complete = () => {
+      if (firedRef.current) return;
+      firedRef.current = true;
+      clearInterval(intervalRef.current);
+      clearTimeout(timeoutRef.current);
+      setSeconds(0);
+      setRunning(false);
+      setAlarming(true);
+      if (MODES[modeIdx].key === 'work') setSessions(n => n + 1);
+      playAlarm();
+      const body = MODES[modeIdx].key === 'work'
+        ? 'Focus session done! Take a break.'
+        : 'Break over. Back to work!';
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try { new Notification('efficient.epp - Pomodoro', { body }); } catch (e) {}
+      }
+      // Flash the tab title so it's obvious when the tab isn't focused
+      const original = document.title;
+      let toggle = false;
+      const titleInterval = setInterval(() => {
+        toggle = !toggle;
+        document.title = toggle ? '⏰ Time\'s up!' : original;
+      }, 800);
+      setTimeout(() => { clearInterval(titleInterval); document.title = original; }, 12000);
+    };
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((endAtRef.current - Date.now()) / 1000));
+      setSeconds(remaining);
+      if (remaining <= 0) complete();
+    };
+
+    tick();
+    intervalRef.current = setInterval(tick, 250);
+    timeoutRef.current  = setTimeout(complete, Math.max(0, endAtRef.current - Date.now()));
+
+    // When tab regains focus, immediately re-tick so display catches up
+    const onVisible = () => { if (!document.hidden) tick(); };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      clearInterval(intervalRef.current);
+      clearTimeout(timeoutRef.current);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [running, modeIdx]);
+
+  const dismissAlarm = () => setAlarming(false);
 
   const total = totalMins * 60;
   const pct   = ((total - seconds) / total) * 100;
@@ -81,6 +164,20 @@ function PomodoroTimer() {
         </svg>
         Pomodoro Timer
       </h2>
+
+      {alarming && (
+        <div className="pomo-alarm">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
+            <path d="M10.3 21a1.94 1.94 0 003.4 0"/>
+          </svg>
+          <span className="pomo-alarm-text">
+            {mode.key === 'work' ? 'Focus session done! Take a break.' : 'Break over. Back to work!'}
+          </span>
+          <button className="pomo-alarm-btn" onClick={() => { dismissAlarm(); playAlarm(); }}>Ring again</button>
+          <button className="pomo-alarm-btn pomo-alarm-btn-primary" onClick={dismissAlarm}>Dismiss</button>
+        </div>
+      )}
 
       <div className="pomo-modes">
         {MODES.map((m, i) => (
@@ -160,7 +257,7 @@ function PomodoroTimer() {
         <button
           className="pomo-btn pomo-btn-main"
           style={{ background: mode.color }}
-          onClick={() => setRunning(r => !r)}
+          onClick={toggleRun}
         >
           {running ? (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
