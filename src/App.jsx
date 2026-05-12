@@ -87,7 +87,7 @@ function App() {
       {page === "Todo" && <Tracker setPage={navigateTo} user={user} />}
       {page === "Study" && <Study setPage={navigateTo} />}
       {showNav && <Nav setPage={navigateTo} currentPage={page} />}
-      {page !== "Home" && <ChatBot user={user} setPage={navigateTo} />}
+      {page !== "Home" && page!=="Info" && <ChatBot user={user} setPage={navigateTo} />}
     </>
   );
 }
