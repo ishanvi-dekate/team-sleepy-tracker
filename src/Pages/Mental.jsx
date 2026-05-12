@@ -60,7 +60,7 @@ function Mental() {
 
         {submitted && (
           <div className="mental-success">
-            ✅ Check-in saved! Come back next week.
+            Check-in saved! Come back next week
           </div>
         )}
 
