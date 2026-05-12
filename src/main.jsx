@@ -6,7 +6,7 @@ import './index.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter basename="/team-efficient-epp">
+    <BrowserRouter>
       <App />
     </BrowserRouter>
   </StrictMode>

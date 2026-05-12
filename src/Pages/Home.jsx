@@ -5,6 +5,98 @@ import SearchBar from "../Components/SearchBar";
 import HomeStatCards from "../Components/HomeStatCards";
 import "./Home.css";
 
+const GRAPH_COLOR = '#1E3A8A';
+
+function parseSleepHours(sleepTime, wakeTime) {
+  if (!sleepTime || !wakeTime) return null;
+  const [sh, sm] = sleepTime.split(':').map(Number);
+  const [wh, wm] = wakeTime.split(':').map(Number);
+  let diff = (wh * 60 + wm) - (sh * 60 + sm);
+  if (diff <= 0) diff += 24 * 60;
+  const h = diff / 60;
+  return (h < 1 || h > 16) ? null : Math.round(h * 10) / 10;
+}
+
+function Sparkline({ data, minY = 0, maxY }) {
+  const W = 180, H = 52, P = 5;
+  if (!data || data.length < 2) {
+    return <p className="hg-empty">Complete a Mental Check to see your trend</p>;
+  }
+  const hi = maxY ?? Math.max(...data);
+  const lo = minY;
+  const rng = (hi - lo) || 1;
+  const px = i => P + (i / (data.length - 1)) * (W - P * 2);
+  const py = v => H - P - ((v - lo) / rng) * (H - P * 2);
+  const pts = data.map((v, i) => [px(i), py(v)]);
+  const line = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const last = pts[pts.length - 1];
+  const area = `${line} L${last[0].toFixed(1)},${H} L${pts[0][0].toFixed(1)},${H}Z`;
+  return (
+    <svg className="hg-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+      <path d={area} fill={GRAPH_COLOR} opacity="0.15" />
+      <path d={line} fill="none" stroke={GRAPH_COLOR} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      {pts.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="3.5" fill={GRAPH_COLOR} />)}
+    </svg>
+  );
+}
+
+function BarChart({ data, maxY }) {
+  const W = 180, H = 52, P = 5;
+  if (!data || data.length === 0) {
+    return <p className="hg-empty">Complete a Mental Check to see your sleep data</p>;
+  }
+  const hi = maxY ?? Math.max(...data, 1);
+  const n = data.length;
+  const slot = (W - P * 2) / n;
+  const bw = slot * 0.6;
+  return (
+    <svg className="hg-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+      {data.map((v, i) => {
+        const bh = Math.max(3, (v / hi) * (H - P * 2));
+        return (
+          <rect
+            key={i}
+            x={P + i * slot + (slot - bw) / 2}
+            y={H - P - bh}
+            width={bw}
+            height={bh}
+            rx="2"
+            fill={GRAPH_COLOR}
+            opacity="0.8"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+function DonutProgress({ done, total }) {
+  const R = 26, CX = 36, CY = 36, SW = 7;
+  const circ = 2 * Math.PI * R;
+  const pct = total > 0 ? done / total : 0;
+  const dash = (pct * circ).toFixed(2);
+  return (
+    <div className="hg-donut-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx={CX} cy={CY} r={R} fill="none" stroke={GRAPH_COLOR} strokeWidth={SW} opacity="0.2" />
+        <circle
+          cx={CX} cy={CY} r={R} fill="none" stroke={GRAPH_COLOR} strokeWidth={SW}
+          strokeDasharray={`${dash} ${circ.toFixed(2)}`}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${CX} ${CY})`}
+        />
+        <text x={CX} y={CY} textAnchor="middle" dy="0.35em" fontSize="12" fontWeight="700" fill="#1F2937">
+          {total > 0 ? `${Math.round(pct * 100)}%` : '—'}
+        </text>
+      </svg>
+      <div className="hg-donut-text">
+        <span className="hg-donut-count">{done}/{total}</span>
+        <span className="hg-donut-label">done this week</span>
+      </div>
+    </div>
+  );
+}
+
 function Home({ setPage, user }) {
   const [username, setUsername] = useState(user?.displayName || "");
 

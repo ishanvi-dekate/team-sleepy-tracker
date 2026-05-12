@@ -49,5 +49,5 @@ export default defineConfig({
       },
     },
   ],
-  base: '/team-efficient-epp/',
+  base: '/',
 })
