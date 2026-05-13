@@ -109,6 +109,12 @@
 }
 
 /* FOOTER */
+.footer-egg {
+  color: #3b82f6;
+  cursor: pointer;
+  user-select: none;
+}
+
 .hero-footer {
   background: #3a3a3a;
   color: #aaa;

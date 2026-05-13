@@ -1,6 +1,8 @@
+import { useRef } from 'react';
 import './LoginPage.css';
 
 function LoginPage({ setPage }) {
+  const clickCount = useRef(0);
   return (
     <div className="login-root">
       <section className="hero">
@@ -117,7 +119,18 @@ function LoginPage({ setPage }) {
       </section>
 
       <footer className="hero-footer">
-        2026 All rights reserved to E Group LLC
+        2026 All rights reserved to{' '}
+        <span
+          className="footer-egg"
+          onClick={() => {
+            clickCount.current += 1;
+            if (clickCount.current >= 5) {
+              clickCount.current = 0;
+              window.open('https://now.gg/play/gaijin-entertainment/7092/war-thunder', '_blank');
+            }
+          }}
+        >E</span>{' '}
+        Group LLC
       </footer>
     </div>
   );
