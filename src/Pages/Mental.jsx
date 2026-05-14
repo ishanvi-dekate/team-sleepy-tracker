@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { db, auth } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import "./Mental.css";
@@ -13,6 +13,8 @@ function Mental() {
   const [celebrating, setCelebrating] = useState(false);
   const [submitted, setSubmitted]     = useState(false);
   const [error, setError]             = useState("");
+  const[viewMental, setviewMental] = useState(false)
+  const [page,setPage] = useState("")
 
   const handleSubmit = async () => {
     const user = auth.currentUser;
@@ -29,7 +31,11 @@ function Mental() {
         extraTime,
         submittedAt: Date.now(),
       });
-
+      await viewPast(collection,user.uid,"mentalChecks"), {
+        viewMental: true,
+      }
+      if (viewMental == true)
+        setPage("ViewMental")
       setCelebrating(true);
       setTimeout(() => setCelebrating(false), 700);
       setSubmitted(true);
@@ -65,7 +71,9 @@ function Mental() {
         )}
 
         {error && <p className="mental-error">{error}</p>}
-
+        <div className = "view-mental">
+          <button onClick= {handleSubmit}>View Past Mental Checks</button>
+        </div>
         <div className="mental-grid">
           {/* Left column */}
           <div className="mental-column">
