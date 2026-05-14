@@ -123,7 +123,6 @@ function Home({ setPage, user }) {
       </div>
 
       <HomeStatCards user={user} setPage={setPage} />
-      <HomeChat user={user} setPage={setPage}/>
 
       <section className="home-icons">
         {/* To-Do */}
@@ -187,6 +186,7 @@ function Home({ setPage, user }) {
           <span className="icon-label">Settings</span>
         </button>
       </section>
+      <HomeChat user={user} setPage={setPage} />
     </main>
   );
 }

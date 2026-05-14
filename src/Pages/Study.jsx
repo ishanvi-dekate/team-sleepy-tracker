@@ -5,6 +5,7 @@ import {
   doc, onSnapshot, query, orderBy,
 } from 'firebase/firestore';
 import './Study.css';
+import { beforeAuthStateChanged } from 'firebase/auth';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POMODORO TIMER
@@ -23,9 +24,9 @@ function playAlarm() {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
-    const beep = (freq, start, dur, vol = 0.35) => {
+    const beep = (freq, start, dur, vol = 2) => {
       const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const gain = ctx.createGain(); 
       osc.type = 'sine';
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.0001, ctx.currentTime + start);
@@ -37,8 +38,29 @@ function playAlarm() {
     };
     // Two short pings + one long tone
     beep(880,  0,    0.22);
-    beep(880,  0.3,  0.22);
+    beep(760,  0.3,  0.22);
     beep(1320, 0.65, 0.55);
+    beep(990,  1,    0.22);
+    beep(1560,  1.3,  0.22);
+    beep(1320, 1.65, 0.55);
+    beep(2360,  2,    0.22);
+    beep(0,2.5,0,1);
+    beep(880, 3, 0.22);
+    beep(760, 3.3, 0.22);
+    beep(1320, 3.65, 0.55);
+    beep(990, 4, 0.22);
+    beep(1560, 4.3, 0.22);
+    beep(1320, 4.65, 0.55);
+    beep(2360, 5, 0.22);
+    beep(0, 5.5, 0.1);
+    beep(880, 6, 0.22);
+    beep(760, 6.3, 0.22);
+    beep(1320, 6.65, 0.55);
+    beep(990, 7, 0.22);
+    beep(1560, 7.3, 0.22);
+    beep(1320, 7.65, 0.55);
+    beep(2360, 8, 0.22);
+    beep(0, 8.5, 0.1);
     setTimeout(() => ctx.close().catch(() => {}), 1800);
   } catch (e) { /* ignore audio failures */ }
 }
@@ -113,6 +135,7 @@ function PomodoroTimer() {
       setAlarming(true);
       if (MODES[modeIdx].key === 'work') setSessions(n => n + 1);
       playAlarm();
+      playAlarm();
       const body = MODES[modeIdx].key === 'work'
         ? 'Focus session done! Take a break.'
         : 'Break over. Back to work!';
@@ -124,7 +147,7 @@ function PomodoroTimer() {
       let toggle = false;
       const titleInterval = setInterval(() => {
         toggle = !toggle;
-        document.title = toggle ? '⏰ Time\'s up!' : original;
+        document.title = toggle ? ' Time is up!' : original;
       }, 800);
       setTimeout(() => { clearInterval(titleInterval); document.title = original; }, 12000);
     };
@@ -174,8 +197,7 @@ function PomodoroTimer() {
           <span className="pomo-alarm-text">
             {mode.key === 'work' ? 'Focus session done! Take a break.' : 'Break over. Back to work!'}
           </span>
-          <button className="pomo-alarm-btn" onClick={() => { dismissAlarm(); playAlarm(); }}>Ring again</button>
-          <button className="pomo-alarm-btn pomo-alarm-btn-primary" onClick={dismissAlarm}>Dismiss</button>
+          <button className="pomo-alarm-btn pomo-alarm-btn-primary" onClick={dismissAlarm}>Click to stop Alarm</button>
         </div>
       )}
 
