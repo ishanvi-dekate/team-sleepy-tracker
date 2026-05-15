@@ -1,5 +1,6 @@
 import { useState } from "react"
 import Mental from "./Mental.jsx"
+import "./ViewMental.css"
 function ViewMental() {
     const [page,setPage] = useState('')
     return (
@@ -9,7 +10,7 @@ function ViewMental() {
                 <h1 className="mental-title">View Past Mental Checks</h1>
             </div>
             <div className = "viewPast">
-                <table>
+                <table className= "pastChecks">
                     <tr>
                         Date
                     </tr>
@@ -22,3 +23,4 @@ function ViewMental() {
         </div>
     )
 }
+export default ViewMental

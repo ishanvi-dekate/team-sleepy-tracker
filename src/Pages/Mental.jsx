@@ -31,11 +31,6 @@ function Mental() {
         extraTime,
         submittedAt: Date.now(),
       });
-      await viewPast(collection,user.uid,"mentalChecks"), {
-        viewMental: true,
-      }
-      if (viewMental == true)
-        setPage("ViewMental")
       setCelebrating(true);
       setTimeout(() => setCelebrating(false), 700);
       setSubmitted(true);
@@ -52,7 +47,11 @@ function Mental() {
       console.error(err);
     }
   };
-
+  const viewPast = async() => {
+    setviewMental(true);
+    if(viewMental)
+      setPage("ViewMental");
+  }
   return (
     <div className="mental-page">
       <div className="mental-banner">
@@ -63,17 +62,17 @@ function Mental() {
         <p className="mental-subtitle">
           Please fill this out once every week so we can provide accurate data for you.
         </p>
-
+        <div className = "view-mental">
+          <button className = "pastButton" onClick= {viewPast}>View Past Mental Checks</button>
+        </div>
         {submitted && (
           <div className="mental-success">
             Check-in saved! Come back next week
           </div>
+        
         )}
 
         {error && <p className="mental-error">{error}</p>}
-        <div className = "view-mental">
-          <button onClick= {handleSubmit}>View Past Mental Checks</button>
-        </div>
         <div className="mental-grid">
           {/* Left column */}
           <div className="mental-column">

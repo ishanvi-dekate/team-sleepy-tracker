@@ -11,6 +11,7 @@ import Account from "./Pages/Account.jsx";
 import Settings from "./Pages/Settings.jsx";
 import Tracker from "./Pages/Tracker.jsx";
 import Mental from "./Pages/Mental.jsx";
+import ViewMental from "./Pages/ViewMental.jsx"
 import Profile from "./Pages/Profile.jsx";
 import Info from "./Pages/Info.jsx";
 import Study from "./Pages/Study.jsx";
@@ -82,6 +83,7 @@ function App() {
       {page === "Home" && <Home setPage={navigateTo} user={user} />}
       {page === "Settings" && <Settings setPage={navigateTo} />}
       {page === "Mental" && <Mental setPage={navigateTo} />}
+      {page === "ViewMental" && <ViewMental setPage={navigateTo} user = {user} />}
       {page === "Profile" && <Profile setPage={navigateTo} />}
       {page === "Info" && <Info setPage={navigateTo} />}
       {page === "Todo" && <Tracker setPage={navigateTo} user={user} />}
