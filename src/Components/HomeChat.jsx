@@ -17,18 +17,18 @@ async function callAI(messages) {
     return res.text();
   }
 
-  const token = import.meta.env.VITE_GITHUB_TOKEN;
-  if (!token) throw new Error('Add VITE_GITHUB_TOKEN to .env.local to enable AI in production.');
+  const token = import.meta.env.VITE_GEMINI_KEY;
+  if (!token) throw new Error('Add VITE_GEMINI_KEY to .env.local to enable AI in production.');
 
-  const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 2000 }),
+    body: JSON.stringify({ model: 'gemini-2.0-flash', messages, max_tokens: 2000 }),
   });
-  if (!res.ok) throw new Error(`GitHub Models ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? '';
 }

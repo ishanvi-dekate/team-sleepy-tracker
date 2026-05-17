@@ -28,13 +28,11 @@ CORE RULE: NEVER give the final answer directly. Your job is to make the student
   },
   quick: {
     label: 'Quick Help',
-    description: 'Gives direct answers with explanations. Use when you need to move fast.',
+    description: 'Responds more dirrectly. For when you just want the answer or a nudge in the right direction.',
     icon: '⚡',
-    prompt: `You are operating in QUICK HELP MODE.
+    prompt: `You are supposed to answer the user's questions dirrectly without much explanation.
 - Give the student the answer or solution directly, then explain the reasoning step by step.
-- Be concise. No filler. Lead with the answer.
-- For writing: you can suggest specific edits or rephrasing.
-- Still teach — explain WHY, not just WHAT.`
+- Be concise. No filler. Lead with the answer.`
   },
   writing: {
     label: 'Writing Coach',
@@ -120,18 +118,18 @@ async function callAI(messages) {
     return res.text();
   }
 
-  const token = import.meta.env.VITE_GITHUB_TOKEN;
-  if (!token) throw new Error('Add VITE_GITHUB_TOKEN to .env.local to enable AI in production.');
+  const token = import.meta.env.VITE_GEMINI_KEY;
+  if (!token) throw new Error('Add VITE_GEMINI_KEY to .env.local to enable AI in production.');
 
-  const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 2000 }),
+    body: JSON.stringify({ model: 'gemini-2.0-flash', messages, max_tokens: 2000 }),
   });
-  if (!res.ok) throw new Error(`GitHub Models ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? '';
 }

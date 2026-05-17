@@ -8,27 +8,27 @@ export default defineConfig({
     {
       name: 'github-ai-proxy',
       configureServer(server) {
-        // POST /ai/chat  →  GitHub Models API (gpt-4o, free, uses injected GITHUB_TOKEN)
+        // POST /ai/chat  →  Gemini API proxy (uses server-side GEMINI_KEY)
         server.middlewares.use('/ai/chat', async (req, res) => {
           let body = '';
           req.on('data', c => (body += c));
           req.on('end', async () => {
             try {
-              const token = process.env.GITHUB_TOKEN || process.env.VITE_GITHUB_TOKEN;
+              const token = process.env.GEMINI_KEY || process.env.VITE_GEMINI_KEY;
               if (!token) {
                 res.statusCode = 401;
-                res.end('No token: add VITE_GITHUB_TOKEN to .env.local');
+                res.end('No token: add VITE_GEMINI_KEY to .env.local');
                 return;
               }
 
               const { messages } = JSON.parse(body);
-              const ghRes = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+              const ghRes = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 2000 }),
+                body: JSON.stringify({ model: 'gemini-2.0-flash', messages, max_tokens: 2000 }),
               });
 
               if (!ghRes.ok) {
