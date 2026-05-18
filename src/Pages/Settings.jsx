@@ -153,13 +153,9 @@ function NotificationsModal() {
 
   return (
     <>
-      {!emailjsConfigured() && (
+      {!auth.currentUser?.email && (
         <div className="sm-setup-banner">
-          <strong>EmailJS not configured.</strong> Add these to your <code>.env.local</code> to enable email sending:
-          <pre className="sm-setup-code">{`VITE_EMAILJS_SERVICE_ID=your_service_id\nVITE_EMAILJS_TEMPLATE_ID=your_template_id\nVITE_EMAILJS_PUBLIC_KEY=your_public_key`}</pre>
-          <a className="sm-setup-link" href="https://www.emailjs.com/" target="_blank" rel="noreferrer">
-            Create a free EmailJS account →
-          </a>
+          <strong>No email address on your account.</strong> Sign in with Google or add an email to receive notifications.
         </div>
       )}
 
@@ -294,8 +290,8 @@ function FocusModeModal() {
 }
 
 // ─── Personal Information ────────────────────────────────────────────────────
-function PersonalInfoModal() {
-  const user = auth.currentUser;
+function PersonalInfoModal({ user }) {
+  user = user ?? auth.currentUser;
   const [form, setForm] = useState({
     username: '', bedtime: '', sleepHours: '', stress: '',
     distractions: '', extracurriculars: '', homeworkClass: '',
@@ -445,7 +441,7 @@ const IcoDoor     = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="
 const IcoAlert    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
 
 // ─── Settings page ───────────────────────────────────────────────────────────
-function Settings({ setPage }) {
+function Settings({ setPage, user }) {
   const [activeModal, setActiveModal] = useState(null);
 
   // Apply focus mode from Firestore on mount
@@ -490,7 +486,7 @@ function Settings({ setPage }) {
     Notifications:  { title: 'Notification Preferences', body: <NotificationsModal /> },
     Troubleshooting:{ title: 'Troubleshooting',          body: <TroubleshootingModal /> },
     FocusMode:      { title: 'Focus Mode',               body: <FocusModeModal /> },
-    PersonalInfo:   { title: 'Personal Information',     body: <PersonalInfoModal /> },
+    PersonalInfo:   { title: 'Personal Information',     body: <PersonalInfoModal user={user} /> },
     DangerZone:     { title: 'Danger Zone',              body: <DangerZoneModal setPage={setPage} /> },
   };
 
