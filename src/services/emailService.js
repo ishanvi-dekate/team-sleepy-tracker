@@ -1,20 +1,12 @@
-import emailjs from '@emailjs/browser';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 
-const SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-const PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+// Uses the browser Web Notifications API — no external service or account needed.
 
-export const emailjsConfigured = () => !!(SERVICE_ID && TEMPLATE_ID && PUBLIC_KEY);
+export const emailjsConfigured = () => 'Notification' in window;
 
 function todayStr() {
   return new Date().toISOString().split('T')[0];
-}
-
-function formatTodoList(todos) {
-  if (!todos.length) return 'No tasks — enjoy your day!';
-  return todos.map(t => `• ${t.text}${t.dueTime ? ` (due ${t.dueTime})` : ''}`).join('\n');
 }
 
 async function getUserTodos(uid) {
@@ -22,69 +14,67 @@ async function getUserTodos(uid) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// Send via EmailJS. Throws if not configured or if send fails.
-async function sendEmail(toEmail, toName, subject, body) {
-  if (!emailjsConfigured()) {
-    throw new Error('EmailJS not configured. See .env.local setup.');
+export async function requestNotificationPermission() {
+  if (!('Notification' in window)) return 'unsupported';
+  if (Notification.permission !== 'default') return Notification.permission;
+  return Notification.requestPermission();
+}
+
+function notify(title, body) {
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '/favicon.svg' });
   }
-  await emailjs.send(
-    SERVICE_ID,
-    TEMPLATE_ID,
-    { to_email: toEmail, to_name: toName, subject, message: body },
-    PUBLIC_KEY,
+}
+
+export async function sendDailyReminder(user) {
+  if (Notification.permission !== 'granted') {
+    const perm = await requestNotificationPermission();
+    if (perm !== 'granted') throw new Error('Notification permission not granted. Allow notifications in your browser settings.');
+  }
+  const todos = await getUserTodos(user.uid);
+  const today = todayStr();
+  const pending = todos.filter(t => t.date === today && !t.done);
+  const dayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  notify(
+    `📋 Tasks for ${dayStr}`,
+    pending.length
+      ? `${pending.length} task${pending.length > 1 ? 's' : ''} today: ${pending.map(t => t.text).join(', ')}`
+      : 'No tasks today — enjoy your day!'
   );
 }
 
-// ── Daily reminder ────────────────────────────────────────────────────────────
-export async function sendDailyReminder(user) {
-  const todos  = await getUserTodos(user.uid);
-  const today  = todayStr();
-  const pending = todos.filter(t => t.date === today && !t.done);
-  const name   = user.displayName || user.email;
-
-  const subject = `📋 Your tasks for today — ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`;
-  const body = `Hi ${name},\n\nHere are your tasks for today:\n\n${formatTodoList(pending)}\n\nYou've got this! — Efficient EPP`;
-
-  await sendEmail(user.email, name, subject, body);
-}
-
-// ── Weekly digest ─────────────────────────────────────────────────────────────
 export async function sendWeeklyDigest(user) {
+  if (Notification.permission !== 'granted') {
+    const perm = await requestNotificationPermission();
+    if (perm !== 'granted') throw new Error('Notification permission not granted. Allow notifications in your browser settings.');
+  }
   const todos = await getUserTodos(user.uid);
-  const now   = new Date();
-
-  // Build a date range for the past 7 days
+  const now = new Date();
   const dates = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     return d.toISOString().split('T')[0];
   });
+  const weekTodos = todos.filter(t => dates.includes(t.date));
+  const done = weekTodos.filter(t => t.done).length;
+  const total = weekTodos.length;
+  const upcoming = todos.filter(t => t.date >= todayStr() && !t.done).length;
 
-  const weekTodos  = todos.filter(t => dates.includes(t.date));
-  const done       = weekTodos.filter(t => t.done).length;
-  const total      = weekTodos.length;
-  const upcoming   = todos.filter(t => t.date >= todayStr() && !t.done);
-  const name       = user.displayName || user.email;
-
-  const subject = `📊 Your weekly progress — Efficient EPP`;
-  const body = `Hi ${name},\n\nHere's your week in review:\n\n✅ Tasks completed: ${done} / ${total}\n\nUpcoming tasks:\n${formatTodoList(upcoming.slice(0, 10))}\n\nKeep up the great work! — Efficient EPP`;
-
-  await sendEmail(user.email, name, subject, body);
+  notify(
+    '📊 Weekly progress — efficient.epp',
+    `You completed ${done}/${total} tasks this week. ${upcoming} upcoming.`
+  );
 }
 
-// ── Deadline alert ────────────────────────────────────────────────────────────
 export async function sendDeadlineAlert(user, todo) {
-  const name    = user.displayName || user.email;
-  const subject = `⏰ Task due soon: ${todo.text}`;
-  const body    = `Hi ${name},\n\n"${todo.text}" is due at ${todo.dueTime} today.\n\nDon't forget! — Efficient EPP`;
-  await sendEmail(user.email, name, subject, body);
+  if (Notification.permission === 'granted') {
+    notify(`⏰ Due soon: ${todo.text}`, `Due at ${todo.dueTime} today.`);
+  }
 }
 
-// ── Auto-send logic (called on app load) ─────────────────────────────────────
-// Checks Firestore to decide whether to send daily/weekly emails.
-// Silently skips if EmailJS isn't configured or if already sent today/this week.
 export async function checkAndSendNotifications(user) {
-  if (!user || !emailjsConfigured()) return;
+  if (!user || !('Notification' in window) || Notification.permission !== 'granted') return;
 
   try {
     const prefsSnap = await getDoc(doc(db, 'users', user.uid, 'settings', 'notifications'));
@@ -95,8 +85,7 @@ export async function checkAndSendNotifications(user) {
     const sent = sentSnap.exists() ? sentSnap.data() : {};
 
     const today = todayStr();
-    const week  = `${new Date().getFullYear()}-W${getISOWeek(new Date())}`;
-
+    const week = `${new Date().getFullYear()}-W${getISOWeek(new Date())}`;
     const updates = {};
 
     if (prefs.emailReminders && sent.dailyDate !== today) {
@@ -104,20 +93,16 @@ export async function checkAndSendNotifications(user) {
       updates.dailyDate = today;
     }
 
-    if (prefs.weeklyDigest && sent.weekKey !== week) {
-      // Only send weekly digest on Monday
-      if (new Date().getDay() === 1) {
-        await sendWeeklyDigest(user);
-        updates.weekKey = week;
-      }
+    if (prefs.weeklyDigest && sent.weekKey !== week && new Date().getDay() === 1) {
+      await sendWeeklyDigest(user);
+      updates.weekKey = week;
     }
 
     if (Object.keys(updates).length > 0) {
       await setDoc(doc(db, 'users', user.uid, 'settings', 'notificationSent'), { ...sent, ...updates });
     }
 
-    // Deadline alerts: show a browser notification for todos due within 30 min
-    if (prefs.taskDeadlines && 'Notification' in window) {
+    if (prefs.taskDeadlines) {
       checkDeadlineAlerts(user);
     }
   } catch (err) {
@@ -133,15 +118,9 @@ function getISOWeek(date) {
 }
 
 async function checkDeadlineAlerts(user) {
-  if (Notification.permission === 'denied') return;
-  if (Notification.permission === 'default') {
-    await Notification.requestPermission();
-  }
-  if (Notification.permission !== 'granted') return;
-
   const todos = await getUserTodos(user.uid);
   const today = todayStr();
-  const now   = new Date();
+  const now = new Date();
 
   todos
     .filter(t => t.date === today && !t.done && t.dueTime)
@@ -151,10 +130,7 @@ async function checkDeadlineAlerts(user) {
       due.setHours(h, m, 0, 0);
       const diffMin = (due - now) / 60000;
       if (diffMin > 0 && diffMin <= 30) {
-        new Notification(`⏰ Due in ${Math.round(diffMin)} min`, {
-          body: t.text,
-          icon: '/favicon.ico',
-        });
+        notify(`⏰ Due in ${Math.round(diffMin)} min`, t.text);
       }
     });
 }

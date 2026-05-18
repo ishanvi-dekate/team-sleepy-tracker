@@ -3,11 +3,9 @@ import { auth, db } from '../firebase';
 import { signOut, updateProfile, sendPasswordResetEmail, deleteUser } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import {
-  emailjsConfigured,
+  requestNotificationPermission,
   sendDailyReminder,
   sendWeeklyDigest,
-  sendDeadlineAlert,
-  checkAndSendNotifications,
 } from '../services/emailService';
 import './Settings.css';
 
@@ -101,14 +99,16 @@ function ManageAccountModal() {
 // ─── Notifications ──────────────────────────────────────────────────────────
 function NotificationsModal() {
   const user = auth.currentUser;
-  const configured = emailjsConfigured();
+  const [permission, setPermission] = useState(() =>
+    'Notification' in window ? Notification.permission : 'unsupported'
+  );
   const [prefs, setPrefs] = useState({
     emailReminders: false,
     weeklyDigest: false,
     taskDeadlines: false,
   });
   const [saving, setSaving] = useState(false);
-  const [testing, setTesting] = useState(null); // which test is in progress
+  const [testing, setTesting] = useState(null);
   const [status, setStatus] = useState({ text: '', ok: true });
 
   useEffect(() => {
@@ -136,51 +136,52 @@ function NotificationsModal() {
     } finally { setSaving(false); }
   };
 
+  const enableNotifications = async () => {
+    const perm = await requestNotificationPermission();
+    setPermission(perm);
+    if (perm === 'granted') {
+      new Notification('efficient.epp', { body: 'Notifications are now enabled!', icon: '/favicon.svg' });
+      flash('Notifications enabled!');
+    } else if (perm === 'denied') {
+      flash('Permission denied — enable notifications in your browser settings.', false);
+    } else if (perm === 'unsupported') {
+      flash('Your browser does not support notifications.', false);
+    }
+  };
+
   const sendTest = async (type) => {
-    if (!user || !configured) return;
+    if (!user) return;
+    if (permission !== 'granted') { await enableNotifications(); return; }
     setTesting(type);
     try {
-      if (type === 'daily')   await sendDailyReminder(user);
-      if (type === 'weekly')  await sendWeeklyDigest(user);
-      flash(`Test email sent to ${user.email}!`);
+      if (type === 'daily')  await sendDailyReminder(user);
+      if (type === 'weekly') await sendWeeklyDigest(user);
+      flash('Test notification sent!');
     } catch (err) {
       flash(`Failed: ${err.message}`, false);
     } finally { setTesting(null); }
   };
 
-  const requestDeadlinePerms = async () => {
-    if (!('Notification' in window)) { flash('Browser notifications not supported.', false); return; }
-    const perm = await Notification.requestPermission();
-    if (perm === 'granted') {
-      flash('Browser notifications enabled!');
-      new Notification('Efficient EPP', { body: 'Deadline alerts are now active.' });
-    } else {
-      flash('Permission denied. Enable notifications in browser settings.', false);
-    }
-  };
-
-  const emailOptions = [
-    { key: 'emailReminders', label: 'Daily task reminders', testType: 'daily',  desc: 'Sent each morning with your tasks for the day.' },
-    { key: 'weeklyDigest',   label: 'Weekly progress digest', testType: 'weekly', desc: 'Sent every Monday with a summary of your week.' },
+  const notifOptions = [
+    { key: 'emailReminders', label: 'Daily task reminders',    testType: 'daily',  desc: 'Browser notification each day when you open the app with your pending tasks.' },
+    { key: 'weeklyDigest',   label: 'Weekly progress digest',  testType: 'weekly', desc: 'Browser notification every Monday with a summary of your week.' },
+    { key: 'taskDeadlines',  label: 'Deadline alerts',         testType: null,     desc: 'Pop-up 30 minutes before any task is due.' },
   ];
 
   return (
     <>
-      {!configured && (
+      {permission !== 'granted' && (
         <div className="sm-setup-banner">
-          <strong>EmailJS not configured.</strong> Add these to your <code>.env.local</code> to enable email sending:
-          <pre className="sm-setup-code">{`VITE_EMAILJS_SERVICE_ID=your_service_id
-VITE_EMAILJS_TEMPLATE_ID=your_template_id
-VITE_EMAILJS_PUBLIC_KEY=your_public_key`}</pre>
-          <a className="sm-setup-link" href="https://www.emailjs.com/" target="_blank" rel="noreferrer">
-            Create a free EmailJS account →
-          </a>
-          <p className="sm-setup-hint">Your template should accept variables: <code>to_email</code>, <code>to_name</code>, <code>subject</code>, <code>message</code>.</p>
+          <strong>Browser notifications {permission === 'denied' ? 'are blocked.' : 'are not enabled.'}</strong>
+          {permission === 'denied'
+            ? <p className="sm-setup-hint">Open your browser site settings and allow notifications for this site, then reload.</p>
+            : <button className="sm-btn" style={{ marginTop: '0.75rem' }} onClick={enableNotifications}>Enable browser notifications</button>
+          }
         </div>
       )}
 
       <div className="sm-toggles">
-        {emailOptions.map(({ key, label, testType, desc }) => (
+        {notifOptions.map(({ key, label, testType, desc }) => (
           <div key={key} className="sm-notif-row">
             <div className="sm-notif-info">
               <label className="sm-toggle-row" style={{ marginBottom: '0.15rem' }}>
@@ -196,36 +197,18 @@ VITE_EMAILJS_PUBLIC_KEY=your_public_key`}</pre>
               </label>
               <p className="sm-notif-desc">{desc}</p>
             </div>
-            <button
-              className="sm-btn sm-btn-outline sm-btn-sm"
-              onClick={() => sendTest(testType)}
-              disabled={!configured || testing === testType}
-              title={configured ? 'Send a test email now' : 'Configure EmailJS first'}
-            >
-              {testing === testType ? 'Sending…' : 'Send test'}
-            </button>
+            {testType && (
+              <button
+                className="sm-btn sm-btn-outline sm-btn-sm"
+                onClick={() => sendTest(testType)}
+                disabled={testing === testType}
+                title="Send a test notification now"
+              >
+                {testing === testType ? 'Sending…' : 'Test'}
+              </button>
+            )}
           </div>
         ))}
-      </div>
-
-      <div className="sm-notif-row">
-        <div className="sm-notif-info">
-          <label className="sm-toggle-row" style={{ marginBottom: '0.15rem' }}>
-            <span style={{ fontWeight: 700 }}>Deadline alerts</span>
-            <button
-              className={`sm-toggle ${prefs.taskDeadlines ? 'on' : ''}`}
-              onClick={() => toggle('taskDeadlines')}
-              role="switch"
-              aria-checked={prefs.taskDeadlines}
-            >
-              <span className="sm-thumb" />
-            </button>
-          </label>
-          <p className="sm-notif-desc">Browser pop-up 30 min before a task is due. No email needed.</p>
-        </div>
-        <button className="sm-btn sm-btn-outline sm-btn-sm" onClick={requestDeadlinePerms}>
-          Enable
-        </button>
       </div>
 
       <button className="sm-btn" onClick={save} disabled={saving}>
