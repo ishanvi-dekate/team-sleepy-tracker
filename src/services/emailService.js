@@ -1,9 +1,11 @@
-import { db } from '../firebase';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { app, db } from '../firebase';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 
-// Uses the browser Web Notifications API — no external service or account needed.
+const functions = getFunctions(app);
+const sendNotificationFn = httpsCallable(functions, 'sendNotification');
 
-export const emailjsConfigured = () => 'Notification' in window;
+export const emailjsConfigured = () => true;
 
 function todayStr() {
   return new Date().toISOString().split('T')[0];
@@ -14,41 +16,26 @@ async function getUserTodos(uid) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-export async function requestNotificationPermission() {
-  if (!('Notification' in window)) return 'unsupported';
-  if (Notification.permission !== 'default') return Notification.permission;
-  return Notification.requestPermission();
-}
-
-function notify(title, body) {
-  if (Notification.permission === 'granted') {
-    new Notification(title, { body, icon: '/favicon.svg' });
-  }
+async function sendEmail(toEmail, toName, subject, message) {
+  const result = await sendNotificationFn({ to: toEmail, toName, subject, message });
+  if (!result.data.success) throw new Error('Email send failed');
 }
 
 export async function sendDailyReminder(user) {
-  if (Notification.permission !== 'granted') {
-    const perm = await requestNotificationPermission();
-    if (perm !== 'granted') throw new Error('Notification permission not granted. Allow notifications in your browser settings.');
-  }
   const todos = await getUserTodos(user.uid);
   const today = todayStr();
   const pending = todos.filter(t => t.date === today && !t.done);
   const dayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const name = user.displayName || 'there';
 
-  notify(
-    `📋 Tasks for ${dayStr}`,
-    pending.length
-      ? `${pending.length} task${pending.length > 1 ? 's' : ''} today: ${pending.map(t => t.text).join(', ')}`
-      : 'No tasks today — enjoy your day!'
-  );
+  const message = pending.length
+    ? `You have ${pending.length} task${pending.length > 1 ? 's' : ''} today:\n\n${pending.map(t => `• ${t.text}`).join('\n')}`
+    : 'No tasks scheduled for today — enjoy your day!';
+
+  await sendEmail(user.email, name, `📋 Tasks for ${dayStr}`, message);
 }
 
 export async function sendWeeklyDigest(user) {
-  if (Notification.permission !== 'granted') {
-    const perm = await requestNotificationPermission();
-    if (perm !== 'granted') throw new Error('Notification permission not granted. Allow notifications in your browser settings.');
-  }
   const todos = await getUserTodos(user.uid);
   const now = new Date();
   const dates = Array.from({ length: 7 }, (_, i) => {
@@ -57,25 +44,26 @@ export async function sendWeeklyDigest(user) {
     return d.toISOString().split('T')[0];
   });
   const weekTodos = todos.filter(t => dates.includes(t.date));
-  const done = weekTodos.filter(t => t.done).length;
-  const total = weekTodos.length;
+  const done     = weekTodos.filter(t => t.done).length;
+  const total    = weekTodos.length;
   const upcoming = todos.filter(t => t.date >= todayStr() && !t.done).length;
+  const name     = user.displayName || 'there';
 
-  notify(
-    '📊 Weekly progress — efficient.epp',
-    `You completed ${done}/${total} tasks this week. ${upcoming} upcoming.`
-  );
+  const message = `Here's your weekly summary:\n\n• Completed: ${done}/${total} tasks\n• Upcoming: ${upcoming} task${upcoming !== 1 ? 's' : ''} remaining\n\nKeep it up!`;
+  await sendEmail(user.email, name, '📊 Weekly Progress — efficient.epp', message);
 }
 
 export async function sendDeadlineAlert(user, todo) {
-  if (Notification.permission === 'granted') {
-    notify(`⏰ Due soon: ${todo.text}`, `Due at ${todo.dueTime} today.`);
-  }
+  await sendEmail(
+    user.email,
+    user.displayName || 'there',
+    `⏰ Due soon: ${todo.text}`,
+    `Heads up — "${todo.text}" is due at ${todo.dueTime} today.`,
+  ).catch(() => {});
 }
 
 export async function checkAndSendNotifications(user) {
-  if (!user || !('Notification' in window) || Notification.permission !== 'granted') return;
-
+  if (!user) return;
   try {
     const prefsSnap = await getDoc(doc(db, 'users', user.uid, 'settings', 'notifications'));
     if (!prefsSnap.exists()) return;
@@ -85,26 +73,21 @@ export async function checkAndSendNotifications(user) {
     const sent = sentSnap.exists() ? sentSnap.data() : {};
 
     const today = todayStr();
-    const week = `${new Date().getFullYear()}-W${getISOWeek(new Date())}`;
+    const week  = `${new Date().getFullYear()}-W${getISOWeek(new Date())}`;
     const updates = {};
 
     if (prefs.emailReminders && sent.dailyDate !== today) {
       await sendDailyReminder(user);
       updates.dailyDate = today;
     }
-
     if (prefs.weeklyDigest && sent.weekKey !== week && new Date().getDay() === 1) {
       await sendWeeklyDigest(user);
       updates.weekKey = week;
     }
-
     if (Object.keys(updates).length > 0) {
       await setDoc(doc(db, 'users', user.uid, 'settings', 'notificationSent'), { ...sent, ...updates });
     }
-
-    if (prefs.taskDeadlines) {
-      checkDeadlineAlerts(user);
-    }
+    if (prefs.taskDeadlines) checkDeadlineAlerts(user);
   } catch (err) {
     console.warn('Notification check failed:', err.message);
   }
@@ -120,17 +103,13 @@ function getISOWeek(date) {
 async function checkDeadlineAlerts(user) {
   const todos = await getUserTodos(user.uid);
   const today = todayStr();
-  const now = new Date();
-
+  const now   = new Date();
   todos
     .filter(t => t.date === today && !t.done && t.dueTime)
     .forEach(t => {
       const [h, m] = t.dueTime.split(':').map(Number);
-      const due = new Date();
-      due.setHours(h, m, 0, 0);
+      const due = new Date(); due.setHours(h, m, 0, 0);
       const diffMin = (due - now) / 60000;
-      if (diffMin > 0 && diffMin <= 30) {
-        notify(`⏰ Due in ${Math.round(diffMin)} min`, t.text);
-      }
+      if (diffMin > 0 && diffMin <= 30) sendDeadlineAlert(user, t);
     });
 }

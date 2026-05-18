@@ -3,9 +3,9 @@ import { auth, db } from '../firebase';
 import { signOut, updateProfile, sendPasswordResetEmail, deleteUser } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import {
-  requestNotificationPermission,
   sendDailyReminder,
   sendWeeklyDigest,
+  emailjsConfigured,
 } from '../services/emailService';
 import './Settings.css';
 
@@ -99,9 +99,6 @@ function ManageAccountModal() {
 // ─── Notifications ──────────────────────────────────────────────────────────
 function NotificationsModal() {
   const user = auth.currentUser;
-  const [permission, setPermission] = useState(() =>
-    'Notification' in window ? Notification.permission : 'unsupported'
-  );
   const [prefs, setPrefs] = useState({
     emailReminders: false,
     weeklyDigest: false,
@@ -136,47 +133,29 @@ function NotificationsModal() {
     } finally { setSaving(false); }
   };
 
-  const enableNotifications = async () => {
-    const perm = await requestNotificationPermission();
-    setPermission(perm);
-    if (perm === 'granted') {
-      new Notification('efficient.epp', { body: 'Notifications are now enabled!', icon: '/favicon.svg' });
-      flash('Notifications enabled!');
-    } else if (perm === 'denied') {
-      flash('Permission denied — enable notifications in your browser settings.', false);
-    } else if (perm === 'unsupported') {
-      flash('Your browser does not support notifications.', false);
-    }
-  };
-
   const sendTest = async (type) => {
     if (!user) return;
-    if (permission !== 'granted') { await enableNotifications(); return; }
     setTesting(type);
     try {
       if (type === 'daily')  await sendDailyReminder(user);
       if (type === 'weekly') await sendWeeklyDigest(user);
-      flash('Test notification sent!');
+      flash('Test email sent!');
     } catch (err) {
       flash(`Failed: ${err.message}`, false);
     } finally { setTesting(null); }
   };
 
   const notifOptions = [
-    { key: 'emailReminders', label: 'Daily task reminders',    testType: 'daily',  desc: 'Browser notification each day when you open the app with your pending tasks.' },
-    { key: 'weeklyDigest',   label: 'Weekly progress digest',  testType: 'weekly', desc: 'Browser notification every Monday with a summary of your week.' },
-    { key: 'taskDeadlines',  label: 'Deadline alerts',         testType: null,     desc: 'Pop-up 30 minutes before any task is due.' },
+    { key: 'emailReminders', label: 'Daily task reminders',   testType: 'daily',  desc: 'Email each day when you open the app with your pending tasks.' },
+    { key: 'weeklyDigest',   label: 'Weekly progress digest', testType: 'weekly', desc: 'Email every Monday with a summary of your week.' },
+    { key: 'taskDeadlines',  label: 'Deadline alerts',        testType: null,     desc: 'Email 30 minutes before any task is due.' },
   ];
 
   return (
     <>
-      {permission !== 'granted' && (
+      {!auth.currentUser?.email && (
         <div className="sm-setup-banner">
-          <strong>Browser notifications {permission === 'denied' ? 'are blocked.' : 'are not enabled.'}</strong>
-          {permission === 'denied'
-            ? <p className="sm-setup-hint">Open your browser site settings and allow notifications for this site, then reload.</p>
-            : <button className="sm-btn" style={{ marginTop: '0.75rem' }} onClick={enableNotifications}>Enable browser notifications</button>
-          }
+          <strong>No email address on your account.</strong> Sign in with Google or add an email to receive notifications.
         </div>
       )}
 
@@ -201,8 +180,8 @@ function NotificationsModal() {
               <button
                 className="sm-btn sm-btn-outline sm-btn-sm"
                 onClick={() => sendTest(testType)}
-                disabled={testing === testType}
-                title="Send a test notification now"
+                disabled={testing === testType || !emailjsConfigured()}
+                title="Send a test email now"
               >
                 {testing === testType ? 'Sending…' : 'Test'}
               </button>
@@ -311,8 +290,8 @@ function FocusModeModal() {
 }
 
 // ─── Personal Information ────────────────────────────────────────────────────
-function PersonalInfoModal() {
-  const user = auth.currentUser;
+function PersonalInfoModal({ user }) {
+  user = user ?? auth.currentUser;
   const [form, setForm] = useState({
     username: '', bedtime: '', sleepHours: '', stress: '',
     distractions: '', extracurriculars: '', homeworkClass: '',
@@ -462,7 +441,7 @@ const IcoDoor     = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="
 const IcoAlert    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
 
 // ─── Settings page ───────────────────────────────────────────────────────────
-function Settings({ setPage }) {
+function Settings({ setPage, user }) {
   const [activeModal, setActiveModal] = useState(null);
 
   // Apply focus mode from Firestore on mount
@@ -507,7 +486,7 @@ function Settings({ setPage }) {
     Notifications:  { title: 'Notification Preferences', body: <NotificationsModal /> },
     Troubleshooting:{ title: 'Troubleshooting',          body: <TroubleshootingModal /> },
     FocusMode:      { title: 'Focus Mode',               body: <FocusModeModal /> },
-    PersonalInfo:   { title: 'Personal Information',     body: <PersonalInfoModal /> },
+    PersonalInfo:   { title: 'Personal Information',     body: <PersonalInfoModal user={user} /> },
     DangerZone:     { title: 'Danger Zone',              body: <DangerZoneModal setPage={setPage} /> },
   };
 

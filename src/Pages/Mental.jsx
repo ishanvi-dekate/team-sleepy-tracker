@@ -121,10 +121,6 @@ function Mental({ setPage }) {
         <p className="mental-subtitle">
           Please fill this out once every week so we can provide accurate data for you.
         </p>
-        <div className="view-mental">
-          <button className="pastButton" onClick={() => setPage?.("ViewMental")}>View Past Mental Checks</button>
-        </div>
-
         {submitted && (
           <div className="mental-success">
             ✅ Check-in saved! Come back next week.

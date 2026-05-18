@@ -81,7 +81,7 @@ function App() {
       {page === "Login" && <Login setPage={navigateTo} />}
       {page === "Account" && <Account setPage={navigateTo} />}
       {page === "Home" && <Home setPage={navigateTo} user={user} />}
-      {page === "Settings" && <Settings setPage={navigateTo} />}
+      {page === "Settings" && <Settings setPage={navigateTo} user={user} />}
       {page === "Mental" && <Mental setPage={navigateTo} />}
       {page === "ViewMental" && <ViewMental setPage={navigateTo} user = {user} />}
       {page === "Profile" && <Profile setPage={navigateTo} />}
