@@ -28,6 +28,7 @@ async function callAI(messages) {
     },
     body: JSON.stringify({ model: 'gemini-2.0-flash', messages, max_tokens: 2000 }),
   });
+  if (res.status === 429) throw new Error('The AI is temporarily rate-limited. Please wait a moment and try again.');
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? '';
