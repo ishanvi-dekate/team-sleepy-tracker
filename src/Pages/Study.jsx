@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { db, auth } from '../firebase';
 import {
   collection, addDoc, deleteDoc, updateDoc,
-  doc, onSnapshot, query, orderBy,
+  doc, onSnapshot, query, orderBy, where, getDocs,
 } from 'firebase/firestore';
 import './Study.css';
 import { beforeAuthStateChanged } from 'firebase/auth';
@@ -658,6 +658,18 @@ function GradeTracker({ user }) {
   };
 
   const remove = (id) => deleteDoc(doc(db, 'users', user.uid, 'grades', id));
+  const removeSubject = async (subj) => {
+    if (!user) return;
+    const gradesQuery = query(collection(db, 'users', user.uid, 'grades'), where('subject', '==', subj));
+    const categoriesQuery = query(collection(db, 'users', user.uid, 'gradeCategories'), where('subject', '==', subj));
+    const [gradeSnap, categorySnap] = await Promise.all([getDocs(gradesQuery), getDocs(categoriesQuery)]);
+    await Promise.all([
+      ...gradeSnap.docs.map(doc => deleteDoc(doc.ref)),
+      ...categorySnap.docs.map(doc => deleteDoc(doc.ref)),
+    ]);
+    if (planningFor === subj) setPlanningFor(null);
+    if (editingCatsFor === subj) setEditingCatsFor(null);
+  };
 
   const grouped = entries.reduce((acc, e) => {
     (acc[e.subject] = acc[e.subject] || []).push(e);
@@ -763,6 +775,9 @@ function GradeTracker({ user }) {
                             <circle cx="12" cy="12" r="3"/>
                             <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
                           </svg>
+                        </button>
+                        <button className="grade-cat-btn" onClick={() => removeSubject(subj)} title="Delete subject and all related grades/categories">
+                          ✕
                         </button>
                       </div>
                     </div>
