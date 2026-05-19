@@ -1,6 +1,6 @@
 # team-efficient.epp
 
-## expLore YoUr HaBits 
+## Explore Your Habits 
 
 Our app is gonna be a wellness/assignment tracker for CCA students, as we've noticed that CCA students struggle to manage their health, as well as struggle to balance rest, schoolwork, and extracurriculars. 
 
